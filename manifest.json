@@ -1,9 +1,9 @@
 {
-  "name": "Canteiro",
+  "name": "Canteiro Pessoal",
   "short_name": "Canteiro",
-  "description": "Sistema pessoal de produtividade",
-  "start_url": "/Canteiro-app/",
-  "scope": "/Canteiro-app/",
+  "description": "Sistema pessoal de produtividade e execução.",
+  "start_url": "/Canteiro-Pessoal-APP/",
+  "scope": "/Canteiro-Pessoal-APP/",
   "display": "standalone",
   "background_color": "#0E0E0E",
   "theme_color": "#0E0E0E",

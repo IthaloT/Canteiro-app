@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Canteiro Pessoal">
+<meta name="theme-color" content="#0E0E0E">
+<link rel="manifest" href="manifest.json">
+<title>Canteiro Pessoal</title>
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+<!-- ── Offline banner ──────────────────────────────────────── -->
+<div id="offline-banner">📵 Sem conexão — o app continua funcionando normalmente</div>
+
+<!-- ── Toast ──────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<div id="hdr">
+  <span class="logo">Can<em>teiro</em> <span style="font-size:11px;color:var(--t2);font-weight:normal;letter-spacing:0">Pessoal</span></span>
+  <div id="sync-dot" class="sync-dot" title="Status da sync" style="flex-shrink:0"></div>
+  <span id="sync-lbl" style="font-size:10px;color:var(--t3);font-family:Georgia,serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+  <span class="version-badge" style="flex-shrink:0" title="Versão do app">v2.8</span>
+  <button class="icon-btn" style="flex-shrink:0" onclick="openM('mbg-history')">Hist.</button>
+  <button class="icon-btn" style="flex-shrink:0" onclick="openSettingsModal()">⚙</button>
+</div>
+
+<!-- ── Nav ────────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="nav-logo" style="display:none" id="nav-logo-desktop">
+    <span><em>⬡</em> <span class="nav-logo-text">Canteiro</span></span>
+  </div>
+  <button class="nav-toggle-btn" id="nav-toggle-btn" onclick="toggleSidebar()" title="Recolher / expandir menu" style="display:none"><span class="toggle-arrow">‹</span></button>
+  <div class="ft-mini" id="ft-mini" style="display:none" title="Timer de foco" onclick="focusTimerToggle()">
+    <svg class="ft-mini-ring" viewBox="0 0 36 36">
+      <circle class="ft-mini-bg" cx="18" cy="18" r="15"/>
+      <circle class="ft-mini-fill" id="ft-mini-fill" cx="18" cy="18" r="15"
+        stroke-dasharray="94.2" stroke-dashoffset="0"/>
+    </svg>
+    <span class="ft-mini-time" id="ft-mini-time">25:00</span>
+  </div>
+  <button class="tab active" id="tab-rotina"   data-tip="Rotina"   onclick="setTab('rotina',this)"><span class="tab-icon">⚡</span><span class="tab-lbl">Rotina</span></button>
+  <button class="tab"        id="tab-caderno"  data-tip="Caderno"  onclick="setTab('caderno',this)"><span class="tab-icon">📋</span><span class="tab-lbl">Caderno</span></button>
+  <button class="tab"        id="tab-predio"   data-tip="Metas"    onclick="setTab('predio',this)"><span class="tab-icon">🎯</span><span class="tab-lbl">Metas</span></button>
+  <div class="nav-bottom-actions" id="nav-bottom-actions" style="display:none">
+    <button class="icon-btn" onclick="openM('mbg-history')" data-tip="Histórico" style="width:100%;font-size:11px;display:flex;align-items:center;gap:6px;justify-content:flex-start"><span>📜</span><span class="btn-lbl">Histórico</span></button>
+    <button class="icon-btn" onclick="openSettingsModal()" data-tip="Configurações" style="width:100%;font-size:11px;display:flex;align-items:center;gap:6px;justify-content:flex-start"><span>⚙</span><span class="btn-lbl">Config</span></button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══ HÁBITOS ══════════════════════════════════════════════ -->
+<div id="sec-rotina" class="sec active">
+
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROTINA HEADER — Resumo do Dia (v3.0)
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="rotina-header">
+    <div class="rdh-title">Resumo do Dia</div>
+    <div class="rdh-date" id="rdh-date-lbl">--</div>
+    <div class="rdh-badges" id="rdh-badges-container">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+
+  <!-- ── Single scroll page ── -->
+  <div class="rotina-scroll">
+
+    <!-- NÍVEL 1: DESAFIOS -->
+    <div class="rotina-section">
+      <div class="rotina-sec-hdr rotina-sec-hdr--desafios">
+        <span class="rsec-icon">🎯</span>
+        <span class="rsec-label">DESAFIOS ATIVOS</span>
+        <span class="rsec-count" id="rtab-des-cnt">0</span>
+        <button class="rsec-add" onclick="openM('mbg-add-desafio')" title="Novo desafio">+</button>
+      </div>
+      <div id="list-desafios" class="rsec-body"></div>
+    </div>
+
+    <!-- NÍVEL 2: HÁBITOS -->
+    <div class="rotina-section">
+      <div class="rotina-sec-hdr rotina-sec-hdr--habitos">
+        <span class="rsec-icon">🧱</span>
+        <span class="rsec-label">HÁBITOS DE CONSTRUÇÃO</span>
+        <span class="rsec-count" id="rtab-hab-cnt">0</span>
+        <span class="rsec-meta" id="hab-hoje-meta"></span>
+        <button class="rsec-add" onclick="openM_addHabito()" title="Novo hábito">+</button>
+      </div>
+      <div class="week-label" style="padding:10px 16px 0">
+        <span id="week-range"></span>
+        <span id="week-stat" style="color:var(--acc)"></span>
+      </div>
+      <div id="list-habitos" class="rsec-body"></div>
+    </div>
+
+    <!-- NÍVEL 3: VÍCIOS -->
+    <div class="rotina-section">
+      <div class="rotina-sec-hdr rotina-sec-hdr--vicios">
+        <span class="rsec-icon">🛡️</span>
+        <span class="rsec-label">VÍCIOS RASTREADOS</span>
+        <span class="rsec-count" id="rtab-vic-cnt">0</span>
+        <button class="rsec-add" onclick="openM('mbg-add-vicio')" title="Novo vício">+</button>
+      </div>
+      <div id="list-vicios" class="rsec-body"></div>
+      <div id="disc-cnt" style="display:none">0</div>
+      <div id="list-descarte" style="display:none"></div>
+    </div>
+
+  </div>
+
+</div><!-- /sec-rotina -->
+
+<!-- ══ CADERNO ══════════════════════════════════════════════ -->
+<div id="sec-caderno" class="sec">
+  <div class="inbox-bar">
+    <input type="text" id="inp-inbox" placeholder="Capturar ideia, pendência, pensamento..." onkeydown="if(event.key==='Enter'){addIdea(this.value); this.value='';}">
+    <button class="btn btn-a" onclick="addIdea(document.getElementById('inp-inbox').value); document.getElementById('inp-inbox').value='';">+</button>
+  </div>
+  <div class="sec-h">Caixa de Entrada <span class="badge" id="inbox-hdr-count">0</span></div>
+  <div id="inbox-list"></div>
+
+  <div class="sec-h mt2" style="display:flex; justify-content:space-between; align-items:center;">
+    Kanban
+    <button class="btn btn-g btn-sm" onclick="openDirectTask()">+ Tarefa</button>
+  </div>
+  <div class="kanban-vertical">
+    <details class="kv-section kv-afazer" open>
+      <summary class="kv-summary">A Fazer <span id="k-afazer-n" class="badge">0</span></summary>
+      <div id="k-afazer" class="kv-list"></div>
+    </details>
+    
+    <details class="kv-section kv-fazendo" open>
+      <summary class="kv-summary">Fazendo <span id="k-fazendo-n" class="badge">0</span></summary>
+      <div id="k-fazendo" class="kv-list"></div>
+    </details>
+    
+    <details class="kv-section kv-feito">
+      <summary class="kv-summary">Concluído <span id="k-feito-n" class="badge">0</span></summary>
+      <div id="k-feito" class="kv-list"></div>
+    </details>
+  </div>
+</div>
+
+<!-- ══ METAS ════════════════════════════════════════════════ -->
+<div id="sec-predio" class="sec">
+
+  <span id="contratos-btn-count" style="display:none"></span>
+  <span id="contratos-float-btn" style="display:none"></span>
+  <span id="contratos-back-btn" style="display:none"></span>
+  <!-- Mobile tab nav -->
+  <div class="predio-nav" id="predio-nav">
+    <button class="predio-nav-tab active" onclick="setPredioTab('frentes',this)">AÇÕES</button>
+    <button class="predio-nav-tab" onclick="setPredioTab('ciclos',this)">TRIMESTRE</button>
+    <button class="predio-nav-tab" onclick="setPredioTab('horizontes',this)">LONGO PRAZO</button>
+    <button class="predio-nav-tab" onclick="setPredioTab('pilares',this)">ÁREAS</button>
+    <button class="predio-nav-tab" onclick="setPredioTab('fundacao',this)">PROPÓSITO</button>
+    <div style="flex:1"></div>
+    <button class="predio-nav-tab" onclick="setPredioTab('contratos',this)" style="border-left:1px solid var(--b1);padding-left:14px">CONTRATOS</button>
+  </div>
+
+  <!-- Insights / analisador -->
+  <div class="metas-insights" id="metas-insights-bar"></div>
+
+  <div class="floor" id="fl-frentes">
+    <div class="floor-hdr">
+      <span class="floor-tag">AÇÕES</span>
+      <span class="floor-count-badge" id="fl-frentes-count"></span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      <div id="preview-frentes" class="floor-preview"></div>
+      
+      <div id="warn-ciclos-frentes" style="display:none"></div>
+      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('frentes')">+ Nova ação</button>
+      <div id="list-frentes" class="gap"></div>
+    </div>
+  </div>
+
+  <div class="floor" id="fl-ciclos">
+    <div class="floor-hdr">
+      <span class="floor-tag">TRIMESTRE</span>
+      <span class="floor-count-badge" id="fl-ciclos-count"></span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      
+      <div id="preview-ciclos" class="floor-preview"></div>
+      <div id="warn-ciclos" class="warn" style="display:none;font-size:11px;color:var(--red);margin-top:4px">Limite de 3 metas trimestrais atingido.</div>
+      <button class="btn btn-g btn-sm gap" id="btn-add-ciclo" onclick="openAddPredi('ciclos')">+ Nova meta trimestral</button>
+      <div id="list-ciclos" class="gap"></div>
+    </div>
+  </div>
+
+  <div class="floor" id="fl-horizontes">
+    <div class="floor-hdr">
+      <span class="floor-tag">LONGO PRAZO</span>
+      <span class="floor-count-badge" id="fl-horizontes-count"></span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      
+      <div id="preview-horizontes" class="floor-preview"></div>
+      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('horizontes')">+ Nova meta de longo prazo</button>
+      <div id="list-horizontes" class="gap"></div>
+    </div>
+  </div>
+
+  <div class="floor" id="fl-pilares">
+    <div class="floor-hdr">
+      <span class="floor-tag">ÁREAS DE FOCO</span>
+      <span class="floor-count-badge" id="fl-pilares-count"></span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      
+      <div id="preview-pilares" class="floor-preview"></div>
+      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('pilares')">+ Nova área de foco</button>
+      <div id="list-pilares" class="gap"></div>
+    </div>
+  </div>
+
+  <div class="floor" id="fl-fundacao">
+    <div class="floor-hdr">
+      <span class="floor-tag">PROPÓSITO MAIOR</span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      <div class="lbl">A bússola inegociável que sustenta tudo</div>
+      <textarea id="inp-missao" rows="4" placeholder='Ex: "Ter liberdade de tempo e dinheiro trabalhando com projetos que eu mesmo criei, sem precisar bater ponto, e ter paz para cuidar da minha saúde e da minha família."'></textarea>
+      <div class="missao-footer">
+        <span class="missao-saved" id="missao-saved-lbl">✓ Salvo</span>
+        <button class="btn btn-a btn-sm" onclick="saveMissao()">Salvar propósito</button>
+      </div>
+      <div id="list-proposito-historico" style="margin-top:12px"></div>
+      <div class="diario-section" style="margin-top:14px;border-top:1px solid var(--b1);padding-top:12px">
+        <button class="btn btn-g btn-sm" style="width:100%" onclick="toggleDiario()">
+          📓 Diário do Propósito <span id="diario-cnt" style="color:var(--t2);font-size:10px"></span>
+        </button>
+        <div id="diario-body" style="display:none;margin-top:10px">
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <input type="month" id="diario-filter-month" onchange="renderDiario()" style="flex:1;min-width:130px;font-size:12px;padding:4px 8px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);color:var(--text);font-family:Georgia,serif">
+          <button onclick="document.getElementById('diario-filter-month').value='';renderDiario()" style="background:none;border:1px solid var(--b1);color:var(--t2);border-radius:var(--rs);padding:4px 8px;font-size:11px;cursor:pointer;font-family:Georgia,serif;white-space:nowrap">Ver tudo</button>
+        </div>
+        <div id="list-diario"></div>
+          <textarea id="inp-diario" rows="3" placeholder="Como está sendo este período para você? Avalie, reflita, registre..." style="margin-top:6px"></textarea>
+          <button class="btn btn-a btn-sm" style="margin-top:6px;width:100%" onclick="addDiario()">+ Registrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="floor" id="fl-contratos">
+    <div class="floor-hdr">
+      <span class="floor-tag">CONTRATOS</span>
+      <span class="floor-count-badge" id="fl-contratos-count"></span>
+      <em class="floor-caret">▾</em>
+    </div>
+    <div class="floor-body">
+      
+      <p style="font-size:11px;color:var(--t3);font-family:Georgia,serif;margin-bottom:10px">Cadeados de recompensa que desbloqueiam ao cumprir uma meta, hábito ou vício.</p>
+      <button class="btn btn-g btn-sm gap" onclick="openAddContrato()">+ Novo contrato</button>
+      <div id="list-contratos" class="gap"></div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══ MODAL: Triagem ════════════════════════════════════════ -->
+<div class="mbg" id="mbg-triage">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-triage')">×</button>
+  <div class="m-tag" id="triage-tag">Triagem</div>
+
+  <!-- Modo direto: campo de texto (só visível quando criação manual) -->
+  <div id="t-direct-input" style="display:none">
+    <input type="text" id="inp-direct-task" placeholder="O que precisa ser feito?" style="margin-bottom:10px">
+  </div>
+
+  <!-- Modo triagem: exibe o texto capturado -->
+  <div class="m-text" id="triage-txt"></div>
+
+  <div id="t-s1">
+    <div class="m-actions">
+      <button class="btn btn-g" onclick="tAct('discard')">🗑 Apagar item</button>
+      <button class="btn btn-g" onclick="tAct('project')">📁 Criar Ação</button>
+      <button class="btn btn-a" onclick="tAct('task')">✓ Criar Tarefa</button>
+    </div>
+  </div>
+
+  <div id="t-s2" style="display:none">
+    <div id="t-s2-q0">
+      <div class="lbl" style="margin-top:4px;font-size:13px;line-height:1.5">Isso é mesmo <strong>necessário</strong> fazer?</div>
+      <div class="m-actions" style="margin-top:12px">
+        <button class="btn btn-red" style="flex:1" onclick="tWizardQ0No()">Não, descartar</button>
+        <button class="btn btn-a" style="flex:1" onclick="tWizardQ0Yes()">Sim, é necessário</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn btn-g btn-sm" id="t-back-btn" onclick="tBack()">← Voltar</button>
+      </div>
+    </div>
+    <div id="t-s2-q1" style="display:none">
+      <div class="lbl" style="margin-top:4px;font-size:13px;line-height:1.5">Precisa ser feito <strong>logo</strong>?</div>
+      <div class="m-actions" style="margin-top:12px">
+        <button class="btn btn-g" style="flex:1" onclick="tWizard('agendar')">Não, pode esperar</button>
+        <button class="btn btn-a" style="flex:1" onclick="tWizardQ2()">Sim, é urgente</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn btn-g btn-sm" onclick="tWizardBackQ1()">← Voltar</button>
+      </div>
+    </div>
+    <div id="t-s2-q2" style="display:none">
+      <div class="lbl" style="margin-top:4px;font-size:13px;line-height:1.5">Só <strong>você</strong> pode resolver isso?</div>
+      <div class="m-actions" style="margin-top:12px">
+        <button class="btn btn-g" style="flex:1" onclick="tWizard('pedir-ajuda')">Outra pessoa pode</button>
+        <button class="btn btn-a" style="flex:1" onclick="tWizard('afazer')">Tem que ser eu</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn btn-g btn-sm" onclick="tWizardBack()">← Voltar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="t-s3" style="display:none">
+    <div class="lbl" style="margin-top:4px">Nome da ação</div>
+    <input type="text" id="inp-triage-proj" placeholder="Ex: Validar plataforma de marketing" style="margin-top:6px">
+    <div class="lbl gap">Prazo (obrigatório para ações)</div>
+    <input type="date" id="inp-triage-prazo" style="margin-top:4px">
+    <div style="font-size:10px;color:var(--t3);font-family:Georgia,serif;margin-top:5px">Vai direto para Ações — projetos práticos de até 2 meses.</div>
+    <div class="m-actions">
+      <button class="btn btn-g" onclick="tBack()">← Voltar</button>
+      <button class="btn btn-a" onclick="tConfirmProj()">✓ Criar Ação</button>
+    </div>
+  </div>
+
+  <div id="t-s4" style="display:none">
+    <div class="lbl" style="margin-top:4px">Tags (opcional)</div>
+    <div id="t-s4-tags" class="ideias-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"></div>
+    <div class="m-actions">
+      <button class="btn btn-g" onclick="tBack()">← Voltar</button>
+      <button class="btn btn-a" onclick="tConfirmIdea()">Salvar ideia 💡</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Gerenciar Tags de Ideias ═══════════════════════ -->
+<div class="mbg" id="mbg-tags">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-tags')">×</button>
+  <div class="m-title">Tags de Ideias</div>
+  <div class="lbl">Nova tag</div>
+  <div class="add-row" style="margin-bottom:14px">
+    <input type="text" id="inp-nova-tag" placeholder="Ex: Negócios, Pessoal, Produto..." onkeydown="if(event.key==='Enter')addTag()">
+    <button class="btn btn-a" onclick="addTag()">+</button>
+  </div>
+  <div id="list-tags"></div>
+</div>
+</div>
+
+<!-- ══ MODAL: Fechar meta ════════════════════════════════════ -->
+<div class="mbg" id="mbg-close-goal">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-close-goal')">×</button>
+  <div class="m-tag">Encerrar meta</div>
+  <div class="m-text" id="cg-txt"></div>
+  <div class="close-opts">
+    <div class="close-opt concluida" onclick="closeGoalConfirm('concluido')">
+      <div class="close-opt-icon">✓</div>
+      <div class="close-opt-lbl">Concluída</div>
+      <div class="close-opt-sub">Vai para o histórico</div>
+    </div>
+    <div class="close-opt continua" onclick="closeGoalConfirm('continua')">
+      <div class="close-opt-icon">↻</div>
+      <div class="close-opt-lbl">Continua</div>
+      <div class="close-opt-sub">Cria novo ciclo</div>
+    </div>
+    <div class="close-opt abandonada" onclick="closeGoalConfirm('abandonado')">
+      <div class="close-opt-icon">✕</div>
+      <div class="close-opt-lbl">Abandonada</div>
+      <div class="close-opt-sub">Vai para o histórico</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Confirmação genérica ══════════════════════════ -->
+
+<!-- ══ MODAL: Vincular ciclo a horizonte ══════════════════════ -->
+<div class="mbg" id="mbg-link-horizonte">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-link-horizonte')">×</button>
+  <div class="m-tag">Vincular ao objetivo de longo prazo</div>
+  <div class="m-text" id="link-horizonte-nome" style="font-size:13px"></div>
+  <div class="lbl gap">Qual objetivo de longo prazo este trimestre contribuiu?</div>
+  <select id="link-horizonte-sel" style="margin-top:6px"></select>
+  <div class="m-actions" style="margin-top:14px">
+    <button class="btn btn-g" onclick="closeM('mbg-link-horizonte')">Pular</button>
+    <button class="btn btn-a" onclick="confirmLinkHorizonte()">📎 Vincular</button>
+  </div>
+</div>
+</div>
+
+
+<!-- ══ MODAL: Adicionar Desafio ══════════════════════════ -->
+<div class="mbg" id="mbg-add-desafio">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-desafio')">×</button>
+  <div class="m-tag">Novo Desafio</div>
+  <div class="lbl gap">Nome do desafio</div>
+  <input type="text" id="inp-des-nome" placeholder="Ex: Ler 30 min, Sem redes sociais...">
+  <div class="lbl gap">Modo</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn btn-g" id="des-mode-construir" onclick="setDesafioMode('construir')" style="flex:1;border-color:var(--green);color:var(--green)">🧱 Construir</button>
+    <button class="btn btn-g" id="des-mode-resistir" onclick="setDesafioMode('resistir')" style="flex:1">💣 Resistir</button>
+  </div>
+  <input type="hidden" id="inp-des-modo" value="construir">
+  <div class="lbl gap">Duração (dias)</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn btn-g btn-sm des-dur-preset" onclick="setDesafioDur(7)">7d</button>
+    <button class="btn btn-g btn-sm des-dur-preset" onclick="setDesafioDur(14)">14d</button>
+    <button class="btn btn-g btn-sm des-dur-preset active" onclick="setDesafioDur(21)">21d</button>
+    <button class="btn btn-g btn-sm des-dur-preset" onclick="setDesafioDur(30)">30d</button>
+    <input type="number" id="inp-des-dur" value="21" min="1" max="365" style="width:60px;text-align:center">
+  </div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-desafio')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveDesafio()">🎯 Iniciar Desafio</button>
+  </div>
+</div>
+</div>
+
+<div class="mbg" id="mbg-confirm">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-confirm')">×</button>
+  <div class="m-title" id="confirm-msg"></div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-confirm')">Cancelar</button>
+    <button class="btn btn-red" id="confirm-ok">Confirmar</button>
+  </div>
+</div><!-- /modal -->
+</div><!-- /mbg-confirm -->
+
+<!-- ══ MODAL: Adicionar hábito ══════════════════════════════ -->
+<div class="mbg" id="mbg-add-habito">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-habito')">×</button>
+  <div class="m-title">Novo hábito</div>
+  <div class="lbl">Nome do hábito</div>
+  <input type="text" id="inp-hab-nome" placeholder="Ex: 1h de estudo, Exercício, Meditação...">
+  <div class="lbl gap">Dias ativos na semana</div>
+  <div class="dias-grid" id="inp-hab-dias">
+    <span class="dia-tog on" data-dia="1">Seg</span>
+    <span class="dia-tog on" data-dia="2">Ter</span>
+    <span class="dia-tog on" data-dia="3">Qua</span>
+    <span class="dia-tog on" data-dia="4">Qui</span>
+    <span class="dia-tog on" data-dia="5">Sex</span>
+    <span class="dia-tog on" data-dia="6">Sáb</span>
+    <span class="dia-tog on" data-dia="0">Dom</span>
+  </div>
+  <div style="font-size:10px;color:var(--t3);font-family:Georgia,serif;margin-top:6px" id="hab-freq-preview">Meta: 7x/semana</div>
+  <div class="lbl gap">Vincular a objetivo (opcional)</div>
+  <div id="add-hab-vinculos-chips" class="chips" style="min-height:24px;margin-bottom:6px"></div>
+  <div class="vp-container" id="add-hab-vp"></div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-habito')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveHabito()">Adicionar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Adicionar ao Prédio ═══════════════════════════ -->
+<div class="mbg" id="mbg-add-predi">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-predi')">×</button>
+  <div class="m-title" id="add-predi-title">Novo item</div>
+  <input type="hidden" id="add-predi-tipo">
+  <div class="lbl" id="add-predi-lbl">Nome</div>
+  <input type="text" id="inp-predi-nome" placeholder="">
+  <div id="predi-desc-field" style="display:none">
+    <div class="lbl gap">Descrição (opcional)</div>
+    <textarea id="inp-predi-desc-generic" rows="2" placeholder="Contexto, detalhes, motivação..."></textarea>
+  </div>
+  <div id="frente-extras" style="display:none">
+    <div class="lbl gap">Descrição (opcional)</div>
+    <textarea id="inp-predi-desc" rows="2" placeholder="Contexto, objetivo..."></textarea>
+    <div class="lbl gap">Prazo</div>
+    <input type="date" id="inp-predi-prazo">
+  </div>
+  <div id="horizonte-extras" style="display:none">
+    <div class="lbl gap">Ano-alvo (ex: 2030)</div>
+    <input type="number" id="inp-predi-ano" placeholder="Ex: 2030" min="2024" max="2060" style="width:140px">
+  </div>
+  <div id="predi-pilar-field" style="display:none">
+    <div class="lbl gap">Área de foco (opcional)</div>
+    <select id="inp-predi-pilar"><option value="">Sem vínculo</option></select>
+  </div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-predi')">Cancelar</button>
+    <button class="btn btn-a" onclick="savePredi()">Adicionar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Adicionar tarefa direta ═══════════════════════ -->
+<div class="mbg" id="mbg-add-task">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-task')">×</button>
+  <div class="m-title">Adicionar tarefa</div>
+  <div class="lbl">Descrição</div>
+  <input type="text" id="inp-task-txt" placeholder="O que precisa ser feito?" onkeydown="if(event.key==='Enter')saveTaskDirect()">
+  <div class="lbl gap">Coluna inicial</div>
+  <select id="inp-task-col">
+    <option value="afazer">A Fazer</option>
+    <option value="fazendo">Fazendo</option>
+  </select>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-task')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveTaskDirect()">Adicionar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Editar hábito ══════════════════════════════════ -->
+<div class="mbg" id="mbg-edit-habito">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-edit-habito')">×</button>
+  <div class="m-title">Editar hábito</div>
+  <input type="hidden" id="edit-hab-id">
+  <div class="lbl">Nome</div>
+  <input type="text" id="edit-hab-nome" placeholder="Nome do hábito..." style="margin-bottom:12px">
+  <div class="lbl">Dias ativos na semana</div>
+  <div class="dias-grid" id="edit-hab-dias">
+    <span class="dia-tog" data-dia="1">Seg</span>
+    <span class="dia-tog" data-dia="2">Ter</span>
+    <span class="dia-tog" data-dia="3">Qua</span>
+    <span class="dia-tog" data-dia="4">Qui</span>
+    <span class="dia-tog" data-dia="5">Sex</span>
+    <span class="dia-tog" data-dia="6">Sáb</span>
+    <span class="dia-tog" data-dia="0">Dom</span>
+  </div>
+  <div style="font-size:10px;color:var(--t3);font-family:Georgia,serif;margin-top:6px" id="edit-hab-freq-preview">Meta: 7x/semana</div>
+  <div class="lbl gap">Vínculos (múltiplos)</div>
+  <div id="edit-hab-vinculos-chips" class="chips" style="min-height:24px;margin-bottom:6px"></div>
+  <div class="vp-container" id="edit-hab-vp"></div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-edit-habito')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveEditHabito()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Editar item do Prédio ══════════════════════════ -->
+<div class="mbg" id="mbg-edit-predi">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-edit-predi')">×</button>
+  <div class="m-title">Editar</div>
+  <input type="hidden" id="edit-predi-tipo">
+  <input type="hidden" id="edit-predi-id">
+  <div class="lbl">Nome</div>
+  <input type="text" id="edit-predi-nome" placeholder="Nome do item...">
+  <div id="edit-predi-desc-wrap" style="display:none">
+    <div class="lbl gap">Descrição (opcional)</div>
+    <textarea id="edit-predi-desc" rows="3" placeholder="Contexto, detalhes, motivação..."></textarea>
+  </div>
+  <div id="edit-predi-prazo-wrap" style="display:none">
+    <div class="lbl gap">Prazo</div>
+    <input type="date" id="edit-predi-prazo">
+  </div>
+  <div id="edit-predi-ano-wrap" style="display:none">
+    <div class="lbl gap">Ano-alvo</div>
+    <input type="number" id="edit-predi-ano" min="2024" max="2060" style="width:140px">
+  </div>
+  <div class="m-actions">
+    <div id="edit-predi-pilar-wrap" style="display:none">
+      <div class="lbl gap">Área de foco (opcional)</div>
+      <select id="edit-predi-pilar"><option value="">Sem vínculo</option></select>
+    </div>
+    <button class="btn btn-g" onclick="closeM('mbg-edit-predi')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveEditPredi()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Detalhes da Meta ═══════════════════════════════ -->
+<div class="mbg" id="mbg-predi-detail">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-predi-detail')">×</button>
+  <div class="m-title" id="detail-nome" style="padding-right:28px"></div>
+  <div id="detail-tipo-badge" style="margin-bottom:10px"></div>
+  <div id="detail-desc-wrap" style="display:none">
+    <div class="lbl">Descrição</div>
+    <div id="detail-desc" style="font-size:13px;color:var(--t2);line-height:1.6;padding:8px 0;white-space:pre-wrap;font-family:Georgia,serif"></div>
+  </div>
+  <div id="detail-prazo-wrap" style="display:none;margin-top:8px"></div>
+  <div id="detail-criado" style="font-size:10px;color:var(--t3);font-family:Georgia,serif;margin-top:12px;padding-top:10px;border-top:1px solid var(--b1)"></div>
+</div>
+</div>
+
+<!-- ══ MODAL: Vícios ════════════════════════════════════════ -->
+<div class="mbg" id="mbg-add-vicio">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-vicio')">×</button>
+  <div class="m-title">Rastrear vício / hábito ruim</div>
+  <div class="lbl">Comportamento a eliminar</div>
+  <input type="text" id="inp-vicio-nome" placeholder="Ex: Redes sociais de manhã, cigarro...">
+  <div class="lbl gap">Dias em que se aplica (deixe todos para rastrear sempre)</div>
+  <div class="dias-grid" id="inp-vicio-dias">
+    <span class="dia-tog on" data-dia="1">Seg</span>
+    <span class="dia-tog on" data-dia="2">Ter</span>
+    <span class="dia-tog on" data-dia="3">Qua</span>
+    <span class="dia-tog on" data-dia="4">Qui</span>
+    <span class="dia-tog on" data-dia="5">Sex</span>
+    <span class="dia-tog on" data-dia="6">Sáb</span>
+    <span class="dia-tog on" data-dia="0">Dom</span>
+  </div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-vicio')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveVicio()">Rastrear</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Histórico ══════════════════════════════════════ -->
+<div class="mbg mbg-fullscreen" id="mbg-history">
+<div class="modal modal-fullscreen">
+  <button class="m-close" onclick="closeM('mbg-history')">×</button>
+  <div class="m-title">Histórico</div>
+  <div class="hist-tabs">
+    <button class="hist-tab active" id="hist-tab-metas" onclick="switchHistTab('metas')">Metas</button>
+    <button class="hist-tab" id="hist-tab-arquivados" onclick="switchHistTab('arquivados')">Arquivados</button>
+    <button class="hist-tab" id="hist-tab-contratos" onclick="switchHistTab('contratos')">Contratos</button>
+  </div>
+  <div id="hist-list"></div>
+</div>
+</div>
+
+<!-- ══ MODAL: Novo Contrato ══════════════════════════════════ -->
+<div class="mbg" id="mbg-add-contrato">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-add-contrato')">×</button>
+  <div class="m-title">Novo Contrato</div>
+  <div class="lbl">A Recompensa</div>
+  <input type="text" id="inp-contrato-recompensa" placeholder="Ex: Sessão de fumo liberada, CS2 o fim de semana todo...">
+  <div class="lbl gap">Tipo de acordo</div>
+  <div class="tipo-opts" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+    <div class="tipo-opt sel" id="tipo-opt-meta" onclick="selectTipoContrato('meta')">
+      <div class="tipo-opt-icon">🎯</div>
+      <div class="tipo-opt-lbl">Uma Meta</div>
+    </div>
+    <div class="tipo-opt" id="tipo-opt-habito" onclick="selectTipoContrato('habito')">
+      <div class="tipo-opt-icon">🧱</div>
+      <div class="tipo-opt-lbl">Um Hábito</div>
+    </div>
+    <div class="tipo-opt" id="tipo-opt-vicio" onclick="selectTipoContrato('vicio')">
+      <div class="tipo-opt-icon">🛡️</div>
+      <div class="tipo-opt-lbl">Um Vício</div>
+    </div>
+  </div>
+  <div class="lbl">Alvo</div>
+  <select id="inp-contrato-alvo"></select>
+  <div id="contrato-alvo-desc" style="font-size:11px;color:var(--t3);font-family:Georgia,serif;margin-top:6px;line-height:1.5"></div>
+  <div class="m-actions">
+    <button class="btn btn-g" onclick="closeM('mbg-add-contrato')">Cancelar</button>
+    <button class="btn btn-a" onclick="saveContrato()">Criar contrato</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Configurações ══════════════════════════════════ -->
+<div class="mbg" id="mbg-settings">
+<div class="modal">
+  <button class="m-close" onclick="closeM('mbg-settings')">×</button>
+  <div class="m-title">Configurações</div>
+
+  <!-- Nuvem -->
+  <div class="cfg-section" id="cfg-nuvem">
+    <div class="cfg-section-hdr" onclick="toggleCfgSection('nuvem')">
+      <div class="cfg-section-title">
+        ☁️ Sincronização com a nuvem
+        <span class="cfg-section-status" id="cfg-nuvem-status">Verificando...</span>
+      </div>
+      <span class="cfg-section-caret">▾</span>
+    </div>
+    <div class="cfg-section-body">
+      <div class="lbl" style="margin-bottom:6px">URL da nuvem (Apps Script)</div>
+      <input type="text" id="inp-script-url" placeholder="https://script.google.com/macros/s/...">
+      <div class="sync-info" id="sync-info" style="margin:8px 0"></div>
+      <button class="btn btn-a btn-sm" style="width:100%;margin-bottom:14px" onclick="saveSettings()">Salvar URL</button>
+
+      <div style="border-top:1px solid var(--b1);padding-top:12px">
+        <button class="sync-action-btn" id="btn-send-cloud" onclick="syncSendToCloud()">
+          ↑ Enviar para a nuvem
+        </button>
+        <div class="sync-action-desc">
+          Envia os dados deste aparelho para a nuvem. Use antes de trocar de dispositivo ou se a sincronização automática falhou.
+        </div>
+
+        <button class="sync-action-btn" id="btn-get-cloud" onclick="syncGetFromCloud()">
+          ↓ Baixar da nuvem
+        </button>
+        <div class="sync-action-desc" style="border-left:2px solid var(--yellow);padding-left:10px">
+          ⚠ Use apenas em um aparelho novo ou no primeiro acesso pelo navegador. Os dados deste dispositivo serão substituídos pelos dados da nuvem.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guia -->
+  <div class="cfg-section">
+    <div class="cfg-section-hdr" onclick="toggleCfgSection('guia')">
+      <div class="cfg-section-title">📖 Guia do app</div>
+      <span class="cfg-section-caret">▾</span>
+    </div>
+    <div class="cfg-section-body" id="cfg-guia">
+      <button class="btn btn-g btn-sm" style="width:100%" onclick="openGuide()">Como usar o Canteiro</button>
+    </div>
+  </div>
+
+  <!-- Manutenção -->
+  <div class="cfg-section" id="cfg-manutencao">
+    <div class="cfg-section-hdr" onclick="toggleCfgSection('manutencao')">
+      <div class="cfg-section-title">🗑 Manutenção</div>
+      <span class="cfg-section-caret">▾</span>
+    </div>
+    <div class="cfg-section-body" id="cfg-manutencao-body">
+      <!-- preenchido por renderMaintenance() ao abrir -->
+    </div>
+  </div>
+
+  <!-- Avançado -->
+  <div class="cfg-section">
+    <div class="cfg-section-hdr" onclick="toggleCfgSection('avancado')">
+      <div class="cfg-section-title">🔧 Avançado</div>
+      <span class="cfg-section-caret">▾</span>
+    </div>
+    <div class="cfg-section-body" id="cfg-avancado">
+      <div class="lbl" style="margin-bottom:8px">Backup manual dos dados</div>
+      <div class="m-actions">
+        <button class="btn btn-g btn-sm" onclick="exportJSON()">↑ Exportar JSON</button>
+        <button class="btn btn-g btn-sm" onclick="document.getElementById('imp-file').click()">↓ Importar JSON</button>
+        <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(event)">
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:4px">
+    <button class="btn btn-g" style="width:100%" onclick="closeM('mbg-settings')">Fechar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ MODAL: Novo dispositivo ═══════════════════════════════ -->
+<div class="mbg" id="mbg-new-device">
+<div class="modal">
+  <div class="m-tag">Primeiro acesso neste dispositivo</div>
+  <div class="m-title">Você tem dados salvos na nuvem</div>
+  <p style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:4px;font-family:Georgia,serif">
+    Detectamos que este dispositivo nunca foi usado com o Canteiro, mas há uma nuvem configurada. O que prefere fazer?
+  </p>
+  <div class="device-choice">
+    <div class="device-opt" onclick="deviceChoiceLocal()">
+      <div class="device-opt-icon">📱</div>
+      <div class="device-opt-lbl">Começar do zero</div>
+      <div class="device-opt-sub">Usar este app vazio, sem importar dados da nuvem</div>
+    </div>
+    <div class="device-opt" onclick="deviceChoiceRestore()">
+      <div class="device-opt-icon">☁️</div>
+      <div class="device-opt-lbl">Baixar da nuvem</div>
+      <div class="device-opt-sub">Puxar meus dados salvos e continuar de onde parei</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Progresso -->
+  <div id="ob-progress-bar" style="position:fixed;top:0;left:0;right:0;z-index:1001;padding:16px 24px 0;background:var(--bg)">
+    <div class="ob-progress">
+      <div class="ob-dot done" id="ob-d0"></div>
+      <div class="ob-dot" id="ob-d1"></div>
+      <div class="ob-dot" id="ob-d2"></div>
+      <div class="ob-dot" id="ob-d3"></div>
+      <div class="ob-dot" id="ob-d4"></div>
+    </div>
+  </div>
+
+  <!-- Step 0: Boas-vindas -->
+  <div class="ob-step active" id="ob-0" style="padding-top:64px">
+    <div class="ob-icon">🌱</div>
+    <div class="ob-title">Bem-vindo ao <em>Canteiro Pessoal</em></div>
+    <div class="ob-body">
+      <p>O Canteiro não é mais uma daquelas listas infinitas de tarefas que só geram ansiedade.</p>
+      <br>
+      <p>Ele é o seu <strong>espaço privado</strong> para organizar o caos, proteger o seu tempo e focar apenas no que realmente importa.</p>
+      <br>
+      <p style="color:var(--acc);font-size:15px;text-align:center;padding:12px;background:var(--acc-d);border-radius:var(--r);border:1px solid var(--acc-g)">
+        <strong>Constância vale mais do que perfeição.</strong>
+      </p>
+      <br>
+      <p>Você pode usar o Canteiro instalado no <strong>celular</strong> ou diretamente pelo <strong>navegador no computador</strong> — funciona dos dois jeitos.</p>
+      <br>
+      <p>Você tem <strong>4 abas</strong> principais. Vamos entender cada uma em 2 minutos?</p>
+    </div>
+    <div class="ob-footer">
+      <button class="ob-btn-skip" onclick="skipOnboarding()">Pular</button>
+      <button class="ob-btn-next" onclick="obNext(1)">Vamos lá →</button>
+    </div>
+  </div>
+
+  <!-- Step 1: Metas -->
+  <div class="ob-step" id="ob-1" style="padding-top:64px">
+    <div class="ob-icon">🎯</div>
+    <div class="ob-title"><em>Metas</em> — O seu mapa</div>
+    <div class="ob-body">
+      <p>Esta é a tela mais importante. Funciona como um funil, da sua maior missão até o que você faz amanhã:</p>
+      <br>
+      <div class="ob-item">
+        <div class="ob-item-tag">Propósito maior</div>
+        <div class="ob-item-title">Para a vida</div>
+        <div class="ob-item-desc">A sua bússola inegociável. Qual a sua grande missão?</div>
+        <div class="ob-item-example">"Ter liberdade de tempo e dinheiro trabalhando com projetos que eu mesmo criei, e ter paz para cuidar da minha saúde e da minha família."</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Áreas de foco</div>
+        <div class="ob-item-title">Sempre ativas</div>
+        <div class="ob-item-desc">As "gavetas" da sua vida que precisam de atenção constante. Você não as conclui — as mantém.</div>
+        <div class="ob-item-example">Exemplos: Meus Negócios · Minha Saúde · Meus Estudos · Minha Família</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Metas de Longo Prazo</div>
+        <div class="ob-item-title">1 a 10 anos</div>
+        <div class="ob-item-desc">Os seus objetivos de 1 a 10 anos. Defina um ano-alvo para cada grande conquista.</div>
+        <div class="ob-item-example">"Fazer o meu negócio gerar renda suficiente para ser minha principal fonte de sustento até 2030."</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Trimestre</div>
+        <div class="ob-item-title">Próximos 90 dias</div>
+        <div class="ob-item-desc">Máximo <strong>3 focos</strong> para este trimestre. Uma data de entrega próxima força a execução imediata.</div>
+        <div class="ob-item-example">"Terminar o módulo de SQL do curso e criar o escopo do banco de dados do meu projeto até 31 de julho."</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Ações</div>
+        <div class="ob-item-title">Até 2 meses</div>
+        <div class="ob-item-desc">Os projetos práticos que você precisa resolver agora. Sempre com verbo de ação claro: Fazer, Revisar, Subir.</div>
+        <div class="ob-item-example">"Fazer os exercícios da aula 5, revisar as tabelas e subir o código no repositório." (Prazo: 15 dias)</div>
+      </div>
+    </div>
+    <div class="ob-footer">
+      <button class="ob-btn-skip" onclick="obPrev(0)">← Voltar</button>
+      <button class="ob-btn-next" onclick="obNext(2)">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Caderno -->
+  <div class="ob-step" id="ob-2" style="padding-top:64px">
+    <div class="ob-icon">📝</div>
+    <div class="ob-title"><em>Caderno</em> — Onde o trabalho acontece</div>
+    <div class="ob-body">
+      <p>Se as Metas são o mapa, o Caderno é a <strong>mão na massa</strong>.</p>
+      <br>
+      <div class="ob-item">
+        <div class="ob-item-tag">Caixa de entrada</div>
+        <div class="ob-item-title">Capture tudo, sem filtro</div>
+        <div class="ob-item-desc">Sua mente serve para ter ideias, não para guardá-las. Lembrou de pagar uma conta? Teve uma ideia do nada? Despeje aqui.</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Kanban</div>
+        <div class="ob-item-title">A Fazer · Fazendo · Feito</div>
+        <div class="ob-item-desc">Para cá vão as tarefas da sua semana.</div>
+        <div class="ob-item-example" style="color:var(--acc);font-style:normal;font-weight:bold">Regra de ouro: nunca mais de 3 coisas em "Fazendo". Termine uma antes de puxar outra.</div>
+      </div>
+    </div>
+    <div class="ob-footer">
+      <button class="ob-btn-skip" onclick="obPrev(1)">← Voltar</button>
+      <button class="ob-btn-next" onclick="obNext(3)">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Hábitos -->
+  <div class="ob-step" id="ob-3" style="padding-top:64px">
+    <div class="ob-icon">🧱</div>
+    <div class="ob-title"><em>Rotina</em> — Tijolo por tijolo e muralha de defesa</div>
+    <div class="ob-body">
+      <p>A aba <strong>Rotina</strong> tem dois modos — alterne com o toggle no topo:</p>
+      <br>
+      <div class="ob-item">
+        <div class="ob-item-tag">🧱 Construir — Hábitos</div>
+        <div class="ob-item-title">Parcial conta ½ ponto</div>
+        <div class="ob-item-desc">Planejou estudar 1h mas só teve energia para 30min? Aperte <strong>Parcial (½)</strong>. Você ganha pontos por ter aparecido e tentado. Defina quantas vezes por semana quer praticar cada hábito.</div>
+        <div class="ob-item-example" style="color:var(--green);font-style:normal">Melhor feito do que perfeito.</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">🛡️ Destruir — Vícios</div>
+        <div class="ob-item-title">Cada dia conta</div>
+        <div class="ob-item-desc">Rastreie comportamentos que roubam seu foco. A cada dia que você clica "Resistiu", sua sequência 🔥 cresce. Configure os dias da semana em que o vício se aplica.</div>
+        <div class="ob-item-example">"Rolar redes sociais antes de dormir" · "Jogar no horário de estudo"</div>
+      </div>
+    </div>
+    <div class="ob-footer">
+      <button class="ob-btn-skip" onclick="obPrev(2)">← Voltar</button>
+      <button class="ob-btn-next" onclick="obNext(4)">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Vícios + Painel -->
+  <div class="ob-step" id="ob-4" style="padding-top:64px">
+    <div class="ob-icon">🛡️</div>
+    <div class="ob-title"><em>Vícios</em> (Aba Rotina) e <em>Painel</em></div>
+    <div class="ob-body">
+      <div class="ob-item">
+        <div class="ob-item-tag">Contratos — Recompensas merecidas</div>
+        <div class="ob-item-title">O cadeado de recompensa</div>
+        <div class="ob-item-desc">Crie um acordo: "Quando eu concluir X meta (ou cumprir X% de um hábito), ganho Y recompensa." O botão só destrava quando você cumprir o combinado.</div>
+        <div class="ob-item-example">"Quando concluir a meta de lançar o produto → CS2 o fim de semana todo"</div>
+      </div>
+      <div class="ob-item">
+        <div class="ob-item-tag">Painel — O retrovisor</div>
+        <div class="ob-item-title">5 minutos todo domingo</div>
+        <div class="ob-item-desc">Veja os gráficos da semana. Que dia você estava mais cansado? Que hábito ficou para trás? Use para planejar uma semana mais leve.</div>
+        <div class="ob-item-example" style="color:var(--acc);font-style:normal">Não se julgue — apenas ajuste a rota.</div>
+      </div>
+    </div>
+    <div class="ob-footer">
+      <button class="ob-btn-skip" onclick="obPrev(3)">← Voltar</button>
+      <button class="ob-btn-next" onclick="finishOnboarding()">Começar agora ✓</button>
+    </div>
+  </div>
+
+</div>
+
+
+<script src="src/utils.js"></script>
+<script src="src/state.js"></script>
+<script src="src/sync.js"></script>
+<script src="src/components/metas.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</body>
+</html>

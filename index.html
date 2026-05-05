@@ -2,2036 +2,1463 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Canteiro">
+<meta name="apple-mobile-web-app-title" content="Canteiro Pessoal">
 <meta name="theme-color" content="#0E0E0E">
 <link rel="manifest" href="manifest.json">
-<title>Canteiro</title>
+<title>Canteiro Pessoal</title>
 <style>
-/* ── Variables ─────────────────────────────────────────────── */
-:root{
-  --bg:#0E0E0E; --s1:#181818; --s2:#222; --s3:#2A2A2A;
-  --b1:#2E2E2E; --b2:#3A3A3A;
-  --acc:#D4A017; --acc-d:rgba(212,160,23,.12); --acc-g:rgba(212,160,23,.22);
-  --text:#EDE8DF; --t2:#888; --t3:#4A4A4A;
-  --green:#3D9E6A; --gd:rgba(61,158,106,.14);
-  --yellow:#C9921A; --yd:rgba(201,146,26,.14);
-  --red:#C84B4B; --rd:rgba(200,75,75,.12);
-  --blue:#4A7FC1; --bd:rgba(74,127,193,.12);
-  --r:10px; --rs:6px; --tr:.15s ease;
-  --nav:56px;
+/* ── Variables & Reset ──────────────────────────────────────── */
+:root {
+  --bg: #0E0E0E; 
+  --s1: #161616; 
+  --s2: #1E1E1E; 
+  --s3: #262626;
+  --b1: #2A2A2A; 
+  --b2: #383838;
+  
+  --text: #F4F4F5; 
+  --t2: #A1A1AA; 
+  --t3: #71717A;
+  
+  --ui-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Cores de Execução (Master Document) */
+  --roxo: #8B5CF6; 
+  --roxo-d: rgba(139, 92, 246, 0.15);
+  
+  --laranja: #F97316; 
+  --laranja-d: rgba(249, 115, 22, 0.15);
+  
+  --verde: #22C55E; 
+  --verde-d: rgba(34, 197, 94, 0.15);
+  
+  --vermelho: #EF4444;
+  --vermelho-d: rgba(239, 68, 68, 0.15);
+  
+  --r: 12px; --rs: 8px; --tr: .15s ease;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-body{display:flex;flex-direction:column;overflow:hidden}
 
-/* ── Header ────────────────────────────────────────────────── */
-#hdr{
-  padding:12px 16px 10px;border-bottom:1px solid var(--b1);
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
-  background:var(--bg);padding-top:max(12px,env(safe-area-inset-top));
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--ui-font); -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Layout Global ──────────────────────────────────────────── */
+main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.sec { display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; height: 100%; }
+.sec.active { display: block; }
+.sec-h { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t2); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--b1); display: flex; align-items: center; justify-content: space-between; }
+.empty { text-align: center; padding: 32px 16px; color: var(--t3); font-size: 13px; line-height: 1.6; }
+
+/* ── UI Elements ────────────────────────────────────────────── */
+input[type=text], input[type=number], input[type=date], textarea, select {
+  width: 100%; background: var(--s2); border: 1px solid var(--b1); border-radius: var(--rs); color: var(--text); padding: 12px; font-size: 14px; font-family: var(--ui-font); outline: none; transition: border-color var(--tr); resize: none;
 }
-.logo{font-size:18px;letter-spacing:-.3px;flex:1}
-.logo em{color:var(--acc);font-style:normal}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:background .3s}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.err{background:var(--red)}
-.sync-dot.syncing{background:var(--acc);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.icon-btn{background:none;border:1px solid var(--b1);color:var(--t2);border-radius:var(--rs);padding:5px 10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:var(--tr)}
-.icon-btn:hover{border-color:var(--acc);color:var(--acc)}
+input:focus, textarea:focus, select:focus { border-color: var(--roxo); background: var(--s1); }
+textarea { min-height: 80px; }
+select { appearance: none; cursor: pointer; }
+select option { background: var(--s2); }
 
-/* ── Nav ───────────────────────────────────────────────────── */
-nav{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0;background:var(--bg)}
-.tab{flex:1;padding:10px 4px;text-align:center;font-family:Georgia,serif;font-size:10px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:var(--tr)}
-.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
-.tab:hover:not(.active){color:var(--t2)}
+.lbl { font-size: 11px; font-weight: 600; color: var(--t2); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; margin-top: 12px; }
+.gap { margin-top: 16px; }
 
-/* ── Main ──────────────────────────────────────────────────── */
-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.sec{display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
-.sec.active{display:block}
-#sec-dash{padding:0 !important}
-#sec-dash.active{display:flex !important;flex-direction:column}
+/* ── Botões ─────────────────────────────────────────────────── */
+.btn { padding: 10px 16px; border-radius: var(--rs); font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: var(--ui-font); transition: var(--tr); }
+.btn-g { background: var(--s2); border: 1px solid var(--b1); color: var(--text); }
+.btn-g:hover { border-color: var(--roxo); color: var(--roxo); }
+.btn-a { background: var(--roxo); color: #FFF; }
+.btn-a:hover { filter: brightness(1.1); }
+.btn-red { background: var(--vermelho-d); color: var(--vermelho); border: 1px solid rgba(239, 68, 68, 0.3); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
 
-/* ── Section title ──────────────────────────────────────────── */
-.sec-h{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;font-family:Georgia,serif}
-.badge{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:1px 7px;font-size:10px;color:var(--t2)}
+/* ── Menu Inferior (Nav) ────────────────────────────────────── */
+nav { display: flex; background: var(--bg); border-top: 1px solid var(--b1); z-index: 50; padding-bottom: max(8px, env(safe-area-inset-bottom)); flex-shrink: 0; }
+.tab { flex: 1; padding: 12px 2px 8px; text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; color: var(--t3); background: none; border: none; transition: var(--tr); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab.active { color: var(--text); }
+.tab.active .tab-icon { filter: drop-shadow(0 0 8px var(--roxo-d)); color: var(--roxo); }
 
-/* ── Inputs & Buttons ──────────────────────────────────────── */
-input[type=text],input[type=date],textarea,select{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);color:var(--text);padding:9px 11px;font-size:14px;font-family:Georgia,serif;outline:none;transition:border-color var(--tr);resize:none}
-input:focus,textarea:focus,select:focus{border-color:var(--acc)}
-textarea{min-height:72px}
-select{appearance:none;cursor:pointer}
-select option{background:var(--s2)}
-.btn{padding:8px 15px;border-radius:var(--rs);font-size:13px;cursor:pointer;border:none;font-family:Georgia,serif;transition:var(--tr);letter-spacing:.1px}
-.btn-a{background:var(--acc);color:#0E0E0E;font-weight:bold}
-.btn-a:hover{background:#E8B425}
-.btn-g{background:none;border:1px solid var(--b1);color:var(--t2)}
-.btn-g:hover{border-color:var(--b2);color:var(--text)}
-.btn-sm{padding:5px 10px;font-size:12px}
-.btn-red{background:none;border:1px solid var(--red);color:var(--red)}
-.btn-red:hover{background:var(--rd)}
-.add-row{display:flex;gap:7px;margin-top:8px}
-.add-row input{flex:1}
-.lbl{font-size:11px;color:var(--t2);margin-bottom:5px;font-family:Georgia,serif;letter-spacing:.3px}
-.gap{margin-top:10px}
-.mt2{margin-top:20px}
+/* ── HEADER: Resumo do Dia (Rotina) ─────────────────────────── */
+#resumo-dia-hdr { padding: 20px 16px 16px; background: var(--bg); border-bottom: 1px solid var(--b1); position: sticky; top: 0; z-index: 10; }
+.hdr-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+.hdr-date { font-size: 12px; color: var(--t2); margin-top: 2px; margin-bottom: 12px; }
+.resumo-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.rb-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: var(--tr); }
+.rb-desafio { background: var(--laranja-d); color: var(--laranja); }
+.rb-habito { background: var(--verde-d); color: var(--verde); }
+.rb-vicio { background: var(--roxo-d); color: var(--roxo); }
+.rb-zero { background: var(--s2); color: var(--t2); opacity: 0.7; }
 
-/* ── Chips ──────────────────────────────────────────────────── */
-.chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b1);border-radius:20px;padding:3px 9px;font-size:12px;color:var(--t2);font-family:Georgia,serif}
-.chip-x{cursor:pointer;color:var(--t3);font-size:14px}
-.chip-x:hover{color:var(--red)}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+/* ── CARDS: Aba Rotina (Ações Binárias) ─────────────────────── */
+.r-card { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r); padding: 16px; margin-bottom: 12px; position: relative; transition: border-color var(--tr); }
+.r-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.r-card-title { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.r-card-kebab { background: none; border: none; color: var(--t3); font-size: 20px; padding: 0 4px; cursor: pointer; line-height: 1; }
+.r-card-kebab:hover { color: var(--text); }
+.r-card-breadcrumb { font-size: 11px; color: var(--t3); margin-top: 6px; letter-spacing: 0.2px; }
 
-/* ── Empty state ─────────────────────────────────────────────── */
-.empty{text-align:center;padding:20px 0;color:var(--t3);font-size:13px;line-height:1.7}
+.r-card-progress-bar { height: 2px; background: var(--s3); border-radius: 2px; margin: 12px 0; overflow: hidden; }
+.r-card-progress-fill { height: 100%; border-radius: 2px; transition: width .3s ease; }
+.fill-habito { background: var(--verde); }
+.fill-desafio { background: var(--laranja); }
+.fill-vicio { background: var(--roxo); }
 
-/* ═══════════════════════════════════════════════════════════
-   HÁBITOS
-═══════════════════════════════════════════════════════════ */
-.week-label{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:10px;font-family:Georgia,serif}
-.habito-row{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:11px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px;animation:fadeIn .18s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}}
-.habito-nome{font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.habito-vinculo{font-size:9px;color:var(--acc);letter-spacing:.5px;display:block;margin-top:1px}
-.days-grid{display:flex;gap:3px;flex-shrink:0}
-.day-cell{
-  width:28px;height:28px;border-radius:5px;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  border:1px solid var(--b1);background:var(--s2);transition:var(--tr);
-  flex-shrink:0;font-size:8px;color:var(--t3);font-family:Georgia,serif;
-}
-.day-cell:hover{border-color:var(--b2)}
-.day-cell.feito{background:var(--gd);border-color:rgba(61,158,106,.4);color:var(--green)}
-.day-cell.parcial{background:var(--yd);border-color:rgba(201,146,26,.4);color:var(--yellow)}
-.day-cell.faltou{background:var(--rd);border-color:rgba(200,75,75,.4);color:var(--red)}
-.day-cell.today{outline:2px solid var(--acc);outline-offset:1px}
-.habito-stat{font-size:11px;color:var(--t2);min-width:28px;text-align:right;font-family:Georgia,serif}
-.habito-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:0 2px;opacity:0;transition:opacity var(--tr)}
-.habito-row:hover .habito-del{opacity:1}
-.habito-del:hover{color:var(--red)}
+.r-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.r-card-status { font-size: 11px; font-weight: 600; color: var(--t2); text-transform: uppercase; letter-spacing: 0.5px; }
+.btn-check { background: var(--roxo); color: #FFF; padding: 10px 20px; border-radius: var(--rs); font-weight: 700; border: none; cursor: pointer; font-size: 13px; box-shadow: 0 4px 12px var(--roxo-d); }
+.btn-resist { background: var(--laranja); color: #FFF; padding: 10px 20px; border-radius: var(--rs); font-weight: 700; border: none; cursor: pointer; font-size: 13px; box-shadow: 0 4px 12px var(--laranja-d); }
+.streak-fire { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--laranja); background: var(--laranja-d); padding: 2px 8px; border-radius: 12px; font-weight: 700; margin-left: 8px; }
 
-/* ═══════════════════════════════════════════════════════════
-   CADERNO — Inbox
-═══════════════════════════════════════════════════════════ */
-.inbox-bar{display:flex;gap:8px;margin-bottom:14px;position:sticky;top:-16px;background:var(--bg);padding:14px 0 10px;z-index:10;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;border-bottom:1px solid var(--b1)}
-.inbox-bar input{flex:1}
-.inbox-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;animation:fadeIn .18s ease}
-.inbox-txt{flex:1;font-size:14px;line-height:1.4;word-break:break-word}
-.inbox-meta{font-size:10px;color:var(--t3);margin-top:2px}
-.triage-btn{background:var(--acc-d);border:1px solid var(--acc-g);color:var(--acc);border-radius:var(--rs);padding:4px 9px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;font-family:Georgia,serif;transition:var(--tr);flex-shrink:0}
-.triage-btn:hover{background:var(--acc);color:#0E0E0E}
-.xbtn{background:none;border:none;color:var(--t3);font-size:16px;cursor:pointer;padding:0 3px;line-height:1;flex-shrink:0}
-.xbtn:hover{color:var(--red)}
+/* ── KEBAB MENU (Contexto) ──────────────────────────────────── */
+.kebab-menu { position: absolute; top: 40px; right: 16px; background: var(--s2); border: 1px solid var(--b2); border-radius: var(--rs); width: 180px; padding: 4px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 100; display: none; }
+.kebab-menu.open { display: block; animation: fadeIn .15s ease; }
+.kebab-item { display: block; width: 100%; padding: 12px 16px; text-align: left; background: none; border: none; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; transition: background var(--tr); }
+.kebab-item:hover { background: var(--s3); }
+.kebab-item.danger { color: var(--vermelho); }
+.kebab-item.danger:hover { background: var(--vermelho-d); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ═══════════════════════════════════════════════════════════
-   KANBAN
-═══════════════════════════════════════════════════════════ */
-.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.k-col{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:10px;min-height:120px}
-.k-col-hdr{font-size:9px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-family:Georgia,serif}
-.k-afazer .k-col-hdr{color:var(--t2)}
-.k-fazendo .k-col-hdr{color:var(--acc)}
-.k-feito .k-col-hdr{color:var(--green)}
-.k-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:8px;margin-bottom:6px;font-size:12px;color:var(--text);line-height:1.4;cursor:default;animation:fadeIn .18s ease}
-.k-card-top{display:flex;align-items:flex-start;gap:5px}
-.k-card-txt{flex:1;word-break:break-word}
-.k-tag{display:inline-block;font-size:8px;font-weight:bold;letter-spacing:.8px;padding:2px 5px;border-radius:3px;margin-top:4px;text-transform:uppercase;font-family:Georgia,serif}
-.k-tag.p11{background:var(--gd);color:var(--green)}
-.k-tag.p10{background:var(--bd);color:var(--blue)}
-.k-tag.p01{background:var(--yd);color:var(--yellow)}
-.k-tag.p00{background:var(--rd);color:var(--red)}
-.k-card-del{background:none;border:none;color:var(--t3);font-size:13px;cursor:pointer;opacity:0;transition:opacity var(--tr);padding:0;flex-shrink:0}
-.k-card:hover .k-card-del{opacity:1}
-.k-card-del:hover{color:var(--red)}
-.k-move{display:flex;gap:3px;margin-top:5px}
-.k-mv-btn{background:none;border:1px solid var(--b1);color:var(--t3);border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;font-family:Georgia,serif;transition:var(--tr)}
-.k-mv-btn:hover{border-color:var(--acc);color:var(--acc)}
+/* ── ABA CADERNO: Inbox & Triagem ───────────────────────────── */
+.inbox-bar { display: flex; gap: 8px; margin-bottom: 24px; position: sticky; top: -16px; background: var(--bg); padding: 16px 0; z-index: 10; border-bottom: 1px solid var(--b1); }
+.inbox-bar input { flex: 1; }
+.inbox-item { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--rs); padding: 16px; margin-bottom: 8px; }
+.inbox-txt { font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 12px; }
+.inbox-actions { display: flex; gap: 8px; }
+.inbox-actions .btn { flex: 1; font-size: 11px; padding: 8px 0; }
 
-/* ═══════════════════════════════════════════════════════════
-   PRÉDIO
-═══════════════════════════════════════════════════════════ */
-.floor{border:1px solid var(--b1);border-radius:var(--r);margin-bottom:9px;overflow:hidden;transition:border-color var(--tr)}
-.floor.open{border-color:var(--b2)}
-.floor-hdr{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--s1);transition:background var(--tr);user-select:none}
-.floor-hdr:hover{background:var(--s2)}
-.floor-tag{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--acc);background:var(--acc-d);border:1px solid var(--acc-g);border-radius:3px;padding:2px 7px;font-family:Georgia,serif;flex-shrink:0}
-.floor-name{font-size:14px;flex:1}
-.floor-caret{color:var(--t3);font-size:10px;font-style:normal;transition:transform .2s}
-.floor.open .floor-caret{transform:rotate(180deg)}
-.floor-body{display:none;padding:14px;border-top:1px solid var(--b1);background:var(--bg);animation:fadeIn .18s ease}
-.floor.open .floor-body{display:block}
+/* ── ABA CADERNO: Kanban Vertical ───────────────────────────── */
+.k-accordion { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--rs); margin-bottom: 12px; overflow: hidden; }
+.k-accordion summary { padding: 16px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t2); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+.k-accordion summary::-webkit-details-marker { display: none; }
+.k-accordion[open] summary { border-bottom: 1px solid var(--b1); color: var(--text); }
+.k-list { padding: 12px; background: var(--bg); }
 
-.predio-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:11px 12px;margin-bottom:7px}
-.pi-top{display:flex;align-items:flex-start;gap:8px}
-.pi-txt{flex:1;font-size:14px;line-height:1.4;word-break:break-word}
-.pi-rodada{font-size:9px;color:var(--acc);background:var(--acc-d);border-radius:3px;padding:1px 5px;margin-left:4px;font-family:Georgia,serif}
-.pi-meta{font-size:11px;color:var(--t2);margin-top:4px}
-.pi-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.pi-btn{background:none;border:1px solid var(--b1);color:var(--t3);border-radius:var(--rs);padding:3px 8px;font-size:11px;cursor:pointer;font-family:Georgia,serif;transition:var(--tr)}
-.pi-btn:hover{border-color:var(--acc);color:var(--acc)}
-.pi-btn.close-btn{border-color:rgba(212,160,23,.3);color:var(--acc)}
+.k-card { background: var(--s2); border: 1px solid var(--b1); border-radius: var(--rs); padding: 14px; margin-bottom: 8px; }
+.k-card-title { font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text); margin-bottom: 4px; }
+.k-card-desc { font-size: 12px; color: var(--t3); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+.k-card-desc.expanded { -webkit-line-clamp: unset; color: var(--t2); }
+.k-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--b1); }
+.k-card-btn { background: var(--laranja-d); color: var(--laranja); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: var(--rs); padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+.k-card-btn.done { background: var(--verde-d); color: var(--verde); border-color: rgba(34, 197, 94, 0.3); }
 
-/* habits linked to predio item */
-.pi-habitos{margin-top:8px;padding-top:8px;border-top:1px solid var(--b1)}
-.pi-hab-toggle{font-size:10px;color:var(--t3);cursor:pointer;display:flex;align-items:center;gap:4px;background:none;border:none;padding:0;font-family:Georgia,serif}
-.pi-hab-toggle:hover{color:var(--t2)}
-.pi-hab-list{margin-top:6px;display:none}
-.pi-hab-list.open{display:block}
-.pi-hab-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);margin-bottom:3px}
-.pi-hab-bar{flex:1;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
-.pi-hab-fill{height:100%;background:var(--acc);border-radius:2px;transition:width .3s}
+/* ── ABA METAS: Hierarquia ──────────────────────────────────── */
+.m-group { margin-bottom: 24px; }
+.m-group-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--roxo); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--b1); padding-bottom: 8px; }
+.m-item { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--rs); padding: 14px; margin-bottom: 8px; }
+.m-item-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.m-item-meta { font-size: 11px; color: var(--t3); display: flex; gap: 12px; align-items: center; }
+.m-badge-prazo { background: var(--s2); border: 1px solid var(--b2); padding: 2px 8px; border-radius: 4px; color: var(--t2); }
+.m-badge-prazo.vencido { background: var(--vermelho-d); color: var(--vermelho); border-color: rgba(239, 68, 68, 0.3); }
 
-/* Frentes extra */
-.frente-item .pi-meta{display:flex;gap:10px;flex-wrap:wrap}
+/* ── ABA CONTRATOS ──────────────────────────────────────────── */
+.c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.c-btn-large { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r); padding: 20px 12px; text-align: center; cursor: pointer; transition: var(--tr); }
+.c-btn-large:hover { border-color: var(--roxo); background: var(--s2); }
+.c-icon { font-size: 28px; margin-bottom: 8px; }
+.c-lbl { font-size: 13px; font-weight: 600; color: var(--text); }
 
-/* ═══════════════════════════════════════════════════════════
-   PORÃO
-═══════════════════════════════════════════════════════════ */
-.vicio-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:9px}
-.vicio-hdr{display:flex;align-items:center;gap:9px;margin-bottom:8px}
-.vicio-nome{font-size:14px;flex:1}
-.streak{background:var(--gd);border:1px solid rgba(61,158,106,.3);color:var(--green);border-radius:20px;padding:2px 9px;font-size:11px;font-family:Georgia,serif}
-.streak.zero{background:var(--rd);border-color:rgba(200,75,75,.3);color:var(--red)}
-.v-grid{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:9px}
-.v-dot{width:19px;height:19px;border-radius:3px;cursor:pointer;transition:transform .1s;flex-shrink:0}
-.v-dot:hover{transform:scale(1.2)}
-.v-dot.resistiu{background:var(--green)}
-.v-dot.quase{background:var(--yellow)}
-.v-dot.cedi{background:var(--red)}
-.v-dot.empty{background:var(--s3);border:1px solid var(--b1)}
-.v-dot.today{outline:2px solid var(--acc);outline-offset:2px}
+.c-card { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+.c-recompensa { font-size: 16px; font-weight: 700; color: var(--laranja); margin-bottom: 6px; }
+.c-alvo { font-size: 12px; color: var(--t2); line-height: 1.5; margin-bottom: 16px; }
+.c-card.desbloqueado { border-color: var(--verde); background: var(--verde-d); }
+.btn-resgatar { width: 100%; padding: 12px; border-radius: var(--rs); font-weight: 700; font-size: 13px; border: none; cursor: pointer; }
+.btn-resgatar:disabled { background: var(--s3); color: var(--t3); cursor: not-allowed; }
+.btn-resgatar.active { background: var(--verde); color: #0E0E0E; }
 
-.disc-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:9px 11px;margin-bottom:5px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)}
-.disc-date{font-size:10px;color:var(--t3);flex-shrink:0}
-.restore-btn{margin-left:auto;font-size:11px;color:var(--t3);cursor:pointer;background:none;border:none;font-family:Georgia,serif}
-.restore-btn:hover{color:var(--acc)}
+/* ── MODAIS ─────────────────────────────────────────────────── */
+.mbg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.mbg.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--bg); border: 1px solid var(--b2); border-radius: 16px 16px 0 0; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform .2s; position: relative; }
+.mbg.open .modal { transform: translateY(0); }
+@media(min-width: 500px) { .mbg { align-items: center; padding: 20px; } .modal { border-radius: 16px; } }
+.m-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--t3); font-size: 24px; cursor: pointer; }
+.m-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); padding-right: 24px; line-height: 1.3; }
 
-/* ═══════════════════════════════════════════════════════════
-   MODALS
-═══════════════════════════════════════════════════════════ */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;transition:opacity .2s;pointer-events:none}
-.mbg.open{opacity:1;pointer-events:all}
-@media(min-width:500px){.mbg{align-items:center;padding:20px}}
-.modal{background:var(--s1);border:1px solid var(--b2);border-radius:16px 16px 0 0;padding:22px;width:100%;max-width:460px;position:relative;transform:translateY(20px);transition:transform .22s;max-height:92vh;overflow-y:auto}
-.mbg.open .modal{transform:translateY(0)}
-@media(min-width:500px){.modal{border-radius:14px}}
-.m-title{font-size:15px;margin-bottom:14px;letter-spacing:-.2px}
-.m-tag{font-size:9px;color:var(--acc);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;font-family:Georgia,serif}
-.m-text{font-size:15px;padding:11px;background:var(--s2);border-radius:var(--rs);border-left:2px solid var(--acc);margin-bottom:14px;line-height:1.5}
-.m-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}
-.m-close:hover{color:var(--text)}
-.m-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.tog-group{display:flex;gap:7px;margin:10px 0}
-.tog{flex:1;padding:9px;text-align:center;border:1px solid var(--b1);border-radius:var(--rs);cursor:pointer;font-size:13px;color:var(--t2);transition:var(--tr);user-select:none;font-family:Georgia,serif}
-.tog.on{border-color:var(--acc);color:var(--acc);background:var(--acc-d)}
-.close-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-.close-opt{padding:14px 8px;border:1px solid var(--b1);border-radius:var(--r);cursor:pointer;text-align:center;transition:var(--tr);font-family:Georgia,serif}
-.close-opt:hover{border-color:var(--acc);background:var(--acc-d)}
-.close-opt-icon{font-size:22px;margin-bottom:5px}
-.close-opt-lbl{font-size:12px;color:var(--text);font-weight:bold}
-.close-opt-sub{font-size:10px;color:var(--t2);margin-top:2px}
-.close-opt.concluida{border-color:rgba(61,158,106,.4)}
-.close-opt.continua{border-color:rgba(212,160,23,.4)}
-.close-opt.abandonada{border-color:rgba(200,75,75,.3)}
+/* ── VINCULAÇÃO EM SANFONA (Modais) ─────────────────────────── */
+.v-accordion { background: var(--s2); border: 1px solid var(--b1); border-radius: var(--rs); margin-bottom: 8px; }
+.v-accordion summary { padding: 14px 16px; font-size: 13px; font-weight: 600; color: var(--t2); cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+.v-accordion summary::-webkit-details-marker { display: none; }
+.v-accordion[open] summary { border-bottom: 1px solid var(--b1); color: var(--roxo); }
+.v-list { padding: 8px 0; background: var(--s1); max-height: 200px; overflow-y: auto; }
+.v-item { padding: 12px 16px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--b1); cursor: pointer; }
+.v-item:last-child { border-bottom: none; }
+.v-item:hover { background: var(--s2); color: var(--roxo); }
+.v-selected-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--roxo-d); border: 1px solid var(--roxo); color: var(--roxo); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px; }
 
-/* settings */
-.settings-url{font-size:11px;color:var(--t2);background:var(--s2);border-radius:var(--rs);padding:8px 10px;word-break:break-all;margin-top:6px;font-family:monospace}
-.sync-info{font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6}
-
-/* ── Histórico ───────────────────────────────────────────── */
-.hist-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:9px 11px;margin-bottom:5px;display:flex;align-items:center;gap:8px;font-size:12px}
-.hist-nome{flex:1;color:var(--t2)}
-.hist-badge{font-size:9px;padding:2px 6px;border-radius:3px;font-family:Georgia,serif;font-weight:bold}
-.hist-badge.concluido{background:var(--gd);color:var(--green)}
-.hist-badge.abandonado{background:var(--rd);color:var(--red)}
-.hist-badge.continua{background:var(--acc-d);color:var(--acc)}
-.hist-rodada{font-size:10px;color:var(--t3)}
-
-/* ══ DASHBOARD ══════════════════════════════════════════════ */
-#dash-filter-bar{
-  background:var(--s1);border-bottom:1px solid var(--b1);
-  padding:12px 16px;flex-shrink:0;position:sticky;top:0;z-index:10;
-}
-.df-title{font-size:13px;font-weight:bold;color:var(--acc);letter-spacing:.5px;margin-bottom:10px}
-.df-periods{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.df-p{
-  padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;
-  border:1px solid var(--b1);background:none;color:var(--t2);
-  font-family:Georgia,serif;transition:var(--tr);letter-spacing:.3px;
-}
-.df-p.active{background:var(--acc);color:#0E0E0E;border-color:var(--acc);font-weight:bold}
-.df-p:hover:not(.active){border-color:var(--acc);color:var(--acc)}
-#dash-custom-range{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-#dash-custom-range input{flex:1;font-size:12px;padding:6px 8px}
-.df-label{font-size:10px;color:var(--t3);letter-spacing:.3px;font-family:Georgia,serif}
-
-/* dash section handled by .sec#sec-dash rules above */
-#dash-content{overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-/* KPI Cards */
-.dash-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.kpi-card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
-  padding:14px 12px;position:relative;overflow:hidden;
-}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kpi-color,var(--acc))}
-.kpi-val{font-size:28px;font-weight:bold;color:var(--kpi-color,var(--acc));line-height:1;margin-bottom:4px}
-.kpi-lbl{font-size:10px;color:var(--t2);letter-spacing:.3px;font-family:Georgia,serif}
-.kpi-sub{font-size:10px;color:var(--t3);margin-top:2px;font-family:Georgia,serif}
-.kpi-card.green{--kpi-color:var(--green)}
-.kpi-card.red{--kpi-color:var(--red)}
-.kpi-card.blue{--kpi-color:var(--blue)}
-.kpi-card.gold{--kpi-color:var(--acc)}
-
-/* Seção do dashboard */
-.dash-sec{margin-bottom:20px}
-.dash-sec-hdr{
-  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--acc);margin-bottom:10px;padding-bottom:6px;
-  border-bottom:1px solid var(--b1);font-family:Georgia,serif;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.dash-sec-hdr span{color:var(--t3);letter-spacing:.5px;text-transform:none;font-size:10px}
-
-/* Barra de progresso */
-.prog-row{margin-bottom:8px}
-.prog-name{display:flex;justify-content:space-between;font-size:12px;color:var(--text);margin-bottom:4px}
-.prog-name-pct{font-size:11px;color:var(--t2)}
-.prog-track{height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
-.prog-fill.green{background:var(--green)}
-.prog-fill.amber{background:var(--yellow)}
-.prog-fill.red{background:var(--red)}
-
-/* Gráfico de barras inline (CSS puro) */
-.bar-chart{display:flex;flex-direction:column;gap:5px;margin-top:8px}
-.bar-row{display:flex;align-items:center;gap:8px;font-size:11px}
-.bar-day{width:50px;color:var(--t2);flex-shrink:0;font-family:Georgia,serif}
-.bar-track{flex:1;height:18px;background:var(--s2);border-radius:3px;overflow:hidden;display:flex;gap:1px}
-.bar-seg{height:100%;transition:width .3s}
-.bar-seg.g{background:var(--green)}
-.bar-seg.a{background:var(--yellow)}
-.bar-seg.r{background:var(--red)}
-.bar-pct{width:36px;text-align:right;color:var(--t2);flex-shrink:0;font-family:Georgia,serif;font-size:10px}
-
-/* Heatmap grid */
-.heatmap{display:flex;flex-wrap:wrap;gap:2px;margin-top:8px}
-.hm-cell{
-  width:16px;height:16px;border-radius:2px;cursor:pointer;
-  position:relative;flex-shrink:0;
-}
-.hm-cell.feito{background:var(--green)}
-.hm-cell.parcial{background:var(--yellow)}
-.hm-cell.faltou{background:var(--red)}
-.hm-cell.empty{background:var(--s3)}
-.hm-cell.today{outline:2px solid var(--acc);outline-offset:1px}
-
-/* Tabela simples */
-.dash-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
-.dash-table th{
-  background:var(--s2);color:var(--t2);font-size:9px;letter-spacing:.8px;
-  text-transform:uppercase;padding:7px 8px;text-align:left;font-weight:normal;
-  font-family:Georgia,serif;
-}
-.dash-table th:not(:first-child){text-align:center}
-.dash-table td{padding:7px 8px;border-bottom:1px solid var(--b1);color:var(--text);vertical-align:middle}
-.dash-table td:not(:first-child){text-align:center;color:var(--t2)}
-.dash-table tr:last-child td{border-bottom:none}
-.dash-table .good{color:var(--green);font-weight:bold}
-.dash-table .mid{color:var(--yellow);font-weight:bold}
-.dash-table .bad{color:var(--red);font-weight:bold}
-
-/* Streak flames */
-.streak-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b1)}
-.streak-row:last-child{border-bottom:none}
-.streak-nome{flex:1;font-size:13px}
-.streak-val{font-size:18px;font-weight:bold;color:var(--acc)}
-
-/* Calendário mensal */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
-.cal-day-hdr{text-align:center;font-size:9px;color:var(--t3);padding:3px 0;font-family:Georgia,serif}
-.cal-day{
-  aspect-ratio:1;border-radius:4px;display:flex;align-items:center;
-  justify-content:center;font-size:10px;cursor:pointer;
-  background:var(--s2);color:var(--t3);font-family:Georgia,serif;
-}
-.cal-day.feito{background:var(--gd);color:var(--green);font-weight:bold}
-.cal-day.parcial{background:var(--yd);color:var(--yellow);font-weight:bold}
-.cal-day.faltou{background:var(--rd);color:var(--red)}
-.cal-day.today{outline:2px solid var(--acc);outline-offset:1px}
-.cal-day.empty{background:transparent;cursor:default}
-
-/* Delete zone */
-.dash-delete-zone{
-  margin-top:20px;padding:14px;border:1px dashed var(--red);
-  border-radius:var(--r);background:var(--rd);
-}
-.dash-delete-title{font-size:11px;color:var(--red);font-weight:bold;margin-bottom:10px;letter-spacing:.5px}
-.dash-delete-item{
-  display:flex;align-items:center;gap:8px;padding:7px 0;
-  border-bottom:1px solid rgba(200,75,75,.15);font-size:13px;
-}
-.dash-delete-item:last-child{border-bottom:none}
-.dash-delete-name{flex:1;color:var(--text)}
-.dash-delete-meta{font-size:10px;color:var(--t2)}
-.dash-delete-btn{
-  background:none;border:1px solid var(--red);color:var(--red);
-  border-radius:var(--rs);padding:3px 8px;font-size:11px;cursor:pointer;
-  font-family:Georgia,serif;transition:var(--tr);
-}
-.dash-delete-btn:hover{background:var(--red);color:var(--text)}
-
-@media(min-width:480px){.dash-kpis{grid-template-columns:repeat(4,1fr)}}
+/* ── TOAST & AVISOS ─────────────────────────────────────────── */
+#toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--bg); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 30px; opacity: 0; pointer-events: none; transition: .2s; z-index: 500; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
+<!-- FIM DA PARTE 1 (COLE A PARTE 2 EXATAMENTE ABAIXO DESTA LINHA) -->
+<!-- ── AVISOS E TOAST ───────────────────────────────────────── -->
+<div id="offline-banner" style="display:none; background:var(--vermelho); color:#FFF; text-align:center; padding:6px; font-size:12px; font-weight:bold; z-index:1000; position:fixed; top:0; width:100%;">📵 Sem conexão — Offline</div>
+<div id="toast"></div>
 
-<!-- ── Header ─────────────────────────────────────────────── -->
-<div id="hdr">
-  <span class="logo">Can<em>teiro</em></span>
-  <div id="sync-dot" class="sync-dot" title="Status da sync"></div>
-  <span id="sync-lbl" style="font-size:10px;color:var(--t3);font-family:Georgia,serif"></span>
-  <button class="icon-btn" onclick="openM('mbg-history')">Hist.</button>
-  <button class="icon-btn" onclick="openM('mbg-settings')">⚙</button>
-</div>
-
-<!-- ── Nav ────────────────────────────────────────────────── -->
-<nav>
-  <button class="tab active" id="tab-habitos"  onclick="setTab('habitos',this)">Hábitos</button>
-  <button class="tab"        id="tab-caderno"  onclick="setTab('caderno',this)">Caderno</button>
-  <button class="tab"        id="tab-predio"   onclick="setTab('predio',this)">Prédio</button>
-  <button class="tab"        id="tab-porao"    onclick="setTab('porao',this)">Porão</button>
-  <button class="tab"        id="tab-dash"     onclick="setTab('dash',this)">Acomp.</button>
+<!-- ── NAVEGAÇÃO INFERIOR ───────────────────────────────────── -->
+<nav id="nav-bar">
+  <button class="tab active" id="tab-rotina" onclick="setTab('rotina')">
+    <span class="tab-icon">⚡</span><span>Rotina</span>
+  </button>
+  <button class="tab" id="tab-caderno" onclick="setTab('caderno')">
+    <span class="tab-icon">📋</span><span>Caderno</span>
+  </button>
+  <button class="tab" id="tab-metas" onclick="setTab('metas')">
+    <span class="tab-icon">🎯</span><span>Metas</span>
+  </button>
+  <button class="tab" id="tab-contratos" onclick="setTab('contratos')">
+    <span class="tab-icon">🏆</span><span>Contratos</span>
+  </button>
 </nav>
 
 <main>
-
-<!-- ══ HÁBITOS ══════════════════════════════════════════════ -->
-<div id="sec-habitos" class="sec active">
-  <div class="week-label">
-    <span id="week-range"></span>
-    <span id="week-stat" style="color:var(--acc)"></span>
-  </div>
-  <div id="list-habitos"></div>
-  <button class="btn btn-g btn-sm" style="width:100%;margin-top:4px" onclick="openM('mbg-add-habito')">+ Novo hábito</button>
-</div>
-
-<!-- ══ CADERNO ══════════════════════════════════════════════ -->
-<div id="sec-caderno" class="sec">
-  <div class="inbox-bar">
-    <input type="text" id="inp-inbox" placeholder="Capturar ideia, pendência, pensamento..." onkeydown="if(event.key==='Enter')addInbox()">
-    <button class="btn btn-a" onclick="addInbox()">+</button>
-  </div>
-  <div class="sec-h">Caixa de Entrada <span class="badge" id="inbox-cnt">0</span></div>
-  <div id="list-inbox"></div>
-
-  <div class="sec-h mt2">
-    Kanban
-    <button class="btn btn-g btn-sm" onclick="openM('mbg-add-task')">+ Tarefa</button>
-  </div>
-  <div class="kanban">
-    <div class="k-col k-afazer">
-      <div class="k-col-hdr">A Fazer <span id="cnt-afazer" class="badge">0</span></div>
-      <div id="col-afazer"></div>
+  <!-- ═══════════════════════════════════════════════════════════
+       ABA 1: ROTINA (Foco no Hoje)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="sec-rotina" class="sec active" style="padding:0;">
+    <div id="resumo-dia-hdr">
+      <div class="hdr-title">Resumo do Dia</div>
+      <div class="hdr-date" id="rotina-data-hoje">Carregando data...</div>
+      <div class="resumo-badges">
+        <span class="rb-badge rb-desafio" id="badge-desafios">🔥 0 Desafios</span>
+        <span class="rb-badge rb-habito" id="badge-habitos">🧱 0 Hábitos</span>
+        <span class="rb-badge rb-vicio" id="badge-vicios">🛡️ 0 Vícios</span>
+      </div>
     </div>
-    <div class="k-col k-fazendo">
-      <div class="k-col-hdr">Fazendo <span id="cnt-fazendo" class="badge">0</span></div>
-      <div id="col-fazendo"></div>
-    </div>
-    <div class="k-col k-feito">
-      <div class="k-col-hdr">Feito <span id="cnt-feito" class="badge">0</span></div>
-      <div id="col-feito"></div>
-    </div>
-  </div>
-</div>
+    
+    <div style="padding: 16px;">
+      <!-- Desafios -->
+      <div class="sec-h" style="margin-top:8px;">Meus Desafios</div>
+      <div id="list-desafios"></div>
 
-<!-- ══ PRÉDIO ════════════════════════════════════════════════ -->
-<div id="sec-predio" class="sec">
+      <!-- Hábitos -->
+      <div class="sec-h gap">Hábitos Diários</div>
+      <div id="list-habitos"></div>
 
-  <div class="floor" id="fl-frentes">
-    <div class="floor-hdr" onclick="flipFloor('frentes')">
-      <span class="floor-tag">Frentes</span>
-      <span class="floor-name">Projetos ativos</span>
-      <em class="floor-caret">▾</em>
-    </div>
-    <div class="floor-body">
-      <div class="lbl">Frentes de trabalho com começo, meio e fim</div>
-      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('frentes')">+ Nova frente</button>
-      <div id="list-frentes" class="gap"></div>
+      <!-- Vícios -->
+      <div class="sec-h gap">Vícios a Resistir</div>
+      <div id="list-vicios"></div>
     </div>
   </div>
 
-  <div class="floor" id="fl-ciclos">
-    <div class="floor-hdr" onclick="flipFloor('ciclos')">
-      <span class="floor-tag">Ciclos</span>
-      <span class="floor-name">Metas trimestrais</span>
-      <em class="floor-caret">▾</em>
+  <!-- ═══════════════════════════════════════════════════════════
+       ABA 2: CADERNO (Inbox e Kanban Vertical)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="sec-caderno" class="sec">
+    <!-- Inbox (Entrada Rápida) -->
+    <div class="inbox-bar">
+      <input type="text" id="inp-inbox" placeholder="Despeje a ideia aqui..." onkeydown="if(event.key==='Enter')addInbox()">
+      <button class="btn btn-a" onclick="addInbox()">+</button>
     </div>
-    <div class="floor-body">
-      <div class="lbl">Máximo 3 focos para os próximos 90 dias</div>
-      <div id="warn-ciclos" class="warn" style="display:none;font-size:11px;color:var(--red);margin-top:4px">Limite de 3 ciclos atingido.</div>
-      <button class="btn btn-g btn-sm gap" id="btn-add-ciclo" onclick="openAddPredi('ciclos')">+ Novo ciclo</button>
-      <div id="list-ciclos" class="gap"></div>
+    
+    <div class="sec-h">Caixa de Entrada <span id="inbox-cnt" style="background:var(--s3); padding:2px 8px; border-radius:10px;">0</span></div>
+    <div id="list-inbox" style="margin-bottom:32px;"></div>
+
+    <!-- Kanban Vertical (Sanfonas) -->
+    <div class="sec-h gap" style="justify-content: space-between;">
+      <span>Painel de Execução</span>
+      <button class="btn btn-g btn-sm" onclick="openDirectTask()">+ Nova Tarefa</button>
+    </div>
+    
+    <details class="k-accordion" open>
+      <summary>A FAZER <span id="cnt-afazer" style="color:var(--t3);">0</span></summary>
+      <div class="k-list" id="col-afazer"></div>
+    </details>
+    
+    <details class="k-accordion" open>
+      <summary style="color:var(--roxo);">FAZENDO <span id="cnt-fazendo">0</span></summary>
+      <div class="k-list" id="col-fazendo"></div>
+    </details>
+    
+    <details class="k-accordion">
+      <summary style="color:var(--verde);">CONCLUÍDO <span id="cnt-feito">0</span></summary>
+      <div class="k-list" id="col-feito"></div>
+    </details>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ABA 3: METAS (A Cascata Obrigatória)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="sec-metas" class="sec">
+    <div class="m-group">
+      <div class="m-group-title">
+        <span>Áreas da Vida</span>
+        <button class="btn btn-g btn-sm" onclick="openAddGoal('pilares')">+</button>
+      </div>
+      <div id="list-pilares"></div>
+    </div>
+
+    <div class="m-group">
+      <div class="m-group-title">
+        <span>Metas de Longo Prazo</span>
+        <button class="btn btn-g btn-sm" onclick="openAddGoal('horizontes')">+</button>
+      </div>
+      <div id="list-horizontes"></div>
+    </div>
+
+    <div class="m-group">
+      <div class="m-group-title">
+        <span>Metas Trimestrais (Máx 3)</span>
+        <button class="btn btn-g btn-sm" id="btn-add-ciclo" onclick="openAddGoal('ciclos')">+</button>
+      </div>
+      <div id="list-ciclos"></div>
+    </div>
+
+    <div class="m-group">
+      <div class="m-group-title">
+        <span>Ações (Até 2 meses)</span>
+        <button class="btn btn-g btn-sm" onclick="openAddGoal('frentes')">+</button>
+      </div>
+      <div id="list-frentes"></div>
     </div>
   </div>
 
-  <div class="floor" id="fl-horizontes">
-    <div class="floor-hdr" onclick="flipFloor('horizontes')">
-      <span class="floor-tag">Horizontes</span>
-      <span class="floor-name">Metas épicas de longo prazo</span>
-      <em class="floor-caret">▾</em>
+  <!-- ═══════════════════════════════════════════════════════════
+       ABA 4: CONTRATOS E CONFIGURAÇÕES
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="sec-contratos" class="sec">
+    <div class="c-grid">
+      <div class="c-btn-large" onclick="openAddContrato()">
+        <div class="c-icon">✍️</div>
+        <div class="c-lbl">Novo Contrato</div>
+      </div>
+      <div class="c-btn-large" onclick="openSettingsModal()">
+        <div class="c-icon">☁️</div>
+        <div class="c-lbl">Sincronização</div>
+      </div>
+      <div class="c-btn-large" onclick="openM('mbg-history')">
+        <div class="c-icon">📜</div>
+        <div class="c-lbl">Histórico</div>
+      </div>
+      <div class="c-btn-large" onclick="openM('mbg-maintenance')">
+        <div class="c-icon">🗑️</div>
+        <div class="c-lbl">Manutenção</div>
+      </div>
     </div>
-    <div class="floor-body">
-      <div class="lbl">Grandes vitórias que mudam o jogo</div>
-      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('horizontes')">+ Novo horizonte</button>
-      <div id="list-horizontes" class="gap"></div>
-    </div>
+
+    <div class="sec-h gap">Seus Contratos Ativos</div>
+    <div id="list-contratos"></div>
   </div>
-
-  <div class="floor" id="fl-pilares">
-    <div class="floor-hdr" onclick="flipFloor('pilares')">
-      <span class="floor-tag">Pilares</span>
-      <span class="floor-name">Grandes áreas de foco</span>
-      <em class="floor-caret">▾</em>
-    </div>
-    <div class="floor-body">
-      <div class="lbl">Caminhos que você decidiu honrar</div>
-      <button class="btn btn-g btn-sm gap" onclick="openAddPredi('pilares')">+ Novo pilar</button>
-      <div id="list-pilares" class="gap"></div>
-    </div>
-  </div>
-
-  <div class="floor" id="fl-fundacao">
-    <div class="floor-hdr" onclick="flipFloor('fundacao')">
-      <span class="floor-tag">Fundação</span>
-      <span class="floor-name">Missão única</span>
-      <em class="floor-caret">▾</em>
-    </div>
-    <div class="floor-body">
-      <div class="lbl">O propósito inegociável que sustenta tudo</div>
-      <textarea id="inp-missao" rows="3" placeholder="Ex: Construir liberdade financeira através de negócios que resolvem problemas reais..." class="gap" oninput="debSave()"></textarea>
-    </div>
-  </div>
-
-</div>
-
-<!-- ══ PORÃO ══════════════════════════════════════════════════ -->
-<div id="sec-porao" class="sec">
-  <div class="sec-h">
-    Rastreador de vícios
-    <button class="btn btn-g btn-sm" onclick="openM('mbg-add-vicio')">+ Novo</button>
-  </div>
-  <div id="list-vicios"></div>
-
-  <div class="sec-h mt2">Descarte <span class="badge" id="disc-cnt">0</span></div>
-  <div id="list-descarte"></div>
-</div>
-
-<!-- ══ DASHBOARD ═════════════════════════════════════════════ -->
-<div id="sec-dash" class="sec">
-
-  <!-- Filtros fixos no topo -->
-  <div id="dash-filter-bar" style="flex-shrink:0">
-    <div class="df-title">Acompanhamento</div>
-    <div class="df-periods">
-      <button class="df-p active" onclick="setDashPeriod('week',this)">Semana</button>
-      <button class="df-p" onclick="setDashPeriod('month',this)">Mês</button>
-      <button class="df-p" onclick="setDashPeriod('quarter',this)">Trimestre</button>
-      <button class="df-p" onclick="setDashPeriod('year',this)">Ano</button>
-      <button class="df-p" onclick="setDashPeriod('custom',this)">Personalizado</button>
-    </div>
-    <div id="dash-custom-range" style="display:none">
-      <input type="date" id="dash-date-from" onchange="renderDash()">
-      <span style="color:var(--t2);font-size:12px">até</span>
-      <input type="date" id="dash-date-to" onchange="renderDash()">
-    </div>
-    <div id="dash-period-label" class="df-label"></div>
-  </div>
-
-  <div id="dash-content" style="padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1"></div>
-</div>
-
 </main>
 
-<!-- ══ MODAL: Triagem ════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════
+     MODAIS E OVERLAYS
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Modal: Adicionar Meta / Área / Ação -->
+<div class="mbg" id="mbg-add-goal">
+  <div class="modal">
+    <button class="m-close" onclick="closeM('mbg-add-goal')">×</button>
+    <div class="m-title" id="add-goal-title">Adicionar Item</div>
+    <input type="hidden" id="inp-goal-tipo">
+    
+    <div class="lbl">Nome</div>
+    <input type="text" id="inp-goal-nome" placeholder="Ex: Lançar produto X">
+    
+    <div id="wrap-goal-desc" style="display:none;">
+      <div class="lbl">Descrição / Notas</div>
+      <textarea id="inp-goal-desc" placeholder="Detalhes da meta..."></textarea>
+    </div>
+
+    <div id="wrap-goal-ano" style="display:none;">
+      <div class="lbl">Ano Alvo (Não pode ser no passado)</div>
+      <input type="number" id="inp-goal-ano" placeholder="Ex: 2027">
+    </div>
+
+    <div id="wrap-goal-prazo" style="display:none;">
+      <div class="lbl">Prazo Exato</div>
+      <input type="date" id="inp-goal-prazo">
+    </div>
+
+    <!-- Vinculação em Sanfona -->
+    <div id="wrap-goal-vinculos" style="display:none; margin-top:16px;">
+      <div class="lbl">Vincular a uma gaveta maior</div>
+      <div id="goal-vinculos-accordion"></div>
+      <input type="hidden" id="inp-goal-vinc-id">
+      <div id="goal-vinc-selected" style="display:none;" class="v-selected-chip"></div>
+    </div>
+
+    <div class="gap" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-a" style="width:100%" onclick="saveGoal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Triagem de Inbox -->
 <div class="mbg" id="mbg-triage">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-triage')">×</button>
-  <div class="m-tag">Triagem</div>
-  <div class="m-text" id="triage-txt"></div>
-
-  <div id="t-s1">
-    <div class="m-actions">
-      <button class="btn btn-g" onclick="tAct('discard')">🗑 Descartar</button>
-      <button class="btn btn-g" onclick="tAct('project')">📁 Criar Frente</button>
-      <button class="btn btn-a" onclick="tAct('task')">✓ Criar Tarefa</button>
-    </div>
-  </div>
-
-  <div id="t-s2" style="display:none">
-    <div class="lbl" style="margin-top:4px">Classifique a tarefa:</div>
-    <div class="tog-group">
-      <div class="tog" id="tog-urg" onclick="flipTog('urg')">⚡ Urgente</div>
-      <div class="tog" id="tog-imp" onclick="flipTog('imp')">⭐ Importante</div>
-    </div>
-    <div class="m-actions">
-      <button class="btn btn-g" onclick="tBack()">← Voltar</button>
-      <button class="btn btn-a" onclick="tConfirmTask()">Criar Tarefa</button>
-    </div>
-  </div>
-
-  <div id="t-s3" style="display:none">
-    <div class="lbl" style="margin-top:4px">Nome da frente</div>
-    <input type="text" id="inp-triage-proj" placeholder="Ex: Validar plataforma de marketing" style="margin-top:6px">
-    <div class="m-actions">
-      <button class="btn btn-g" onclick="tBack()">← Voltar</button>
-      <button class="btn btn-a" onclick="tConfirmProj()">Criar Frente</button>
+  <div class="modal">
+    <button class="m-close" onclick="closeM('mbg-triage')">×</button>
+    <div class="m-title">Triagem de Ideia</div>
+    
+    <div class="lbl">Título da Tarefa / Ideia</div>
+    <input type="text" id="inp-triage-title">
+    
+    <div class="lbl">Descrição Opcional</div>
+    <textarea id="inp-triage-desc" placeholder="Adicione links, detalhes..."></textarea>
+    
+    <input type="hidden" id="inp-triage-id">
+    
+    <div class="gap" style="display:flex; gap:12px;">
+      <button class="btn btn-red" style="flex:1" onclick="triageAction('delete')">Descartar</button>
+      <button class="btn btn-a" style="flex:2" onclick="triageAction('task')">Enviar p/ A Fazer</button>
     </div>
   </div>
 </div>
-</div>
 
-<!-- ══ MODAL: Fechar meta ════════════════════════════════════ -->
-<div class="mbg" id="mbg-close-goal">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-close-goal')">×</button>
-  <div class="m-tag">Encerrar meta</div>
-  <div class="m-text" id="cg-txt"></div>
-  <div class="close-opts">
-    <div class="close-opt concluida" onclick="closeGoalConfirm('concluido')">
-      <div class="close-opt-icon">✓</div>
-      <div class="close-opt-lbl">Concluída</div>
-      <div class="close-opt-sub">Vai para o histórico</div>
-    </div>
-    <div class="close-opt continua" onclick="closeGoalConfirm('continua')">
-      <div class="close-opt-icon">↻</div>
-      <div class="close-opt-lbl">Continua</div>
-      <div class="close-opt-sub">Cria novo ciclo</div>
-    </div>
-    <div class="close-opt abandonada" onclick="closeGoalConfirm('abandonado')">
-      <div class="close-opt-icon">✕</div>
-      <div class="close-opt-lbl">Abandonada</div>
-      <div class="close-opt-sub">Vai para o histórico</div>
+<!-- Modal: Novo Contrato -->
+<div class="mbg" id="mbg-add-contrato">
+  <div class="modal">
+    <button class="m-close" onclick="closeM('mbg-add-contrato')">×</button>
+    <div class="m-title">Firmar Contrato</div>
+    
+    <div class="lbl">Recompensa (O que você ganha?)</div>
+    <input type="text" id="inp-contrato-rec" placeholder="Ex: Comprar o jogo X">
+    
+    <div class="lbl">Gatilho (Quando desbloqueia?)</div>
+    <details class="v-accordion">
+      <summary>Escolher Meta ou Hábito</summary>
+      <div class="v-list" id="contrato-alvos-list"></div>
+    </details>
+    <input type="hidden" id="inp-contrato-alvo-id">
+    <input type="hidden" id="inp-contrato-alvo-tipo">
+    <div id="contrato-alvo-selected" style="display:none;" class="v-selected-chip"></div>
+
+    <div class="gap">
+      <button class="btn btn-a" style="width:100%" onclick="saveContrato()">Firmar Acordo</button>
     </div>
   </div>
 </div>
-</div>
 
-<!-- ══ MODAL: Confirmação genérica ══════════════════════════ -->
+<!-- Modal: Confirmação Genérica -->
 <div class="mbg" id="mbg-confirm">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-confirm')">×</button>
-  <div class="m-title" id="confirm-msg"></div>
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-confirm')">Cancelar</button>
-    <button class="btn btn-red" id="confirm-ok">Confirmar</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Adicionar hábito ══════════════════════════════ -->
-<div class="mbg" id="mbg-add-habito">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-add-habito')">×</button>
-  <div class="m-title">Novo hábito</div>
-  <div class="lbl">Nome do hábito</div>
-  <input type="text" id="inp-hab-nome" placeholder="Ex: 1h de estudo, Exercício, Meditação...">
-  <div class="lbl gap">Vincular a objetivo do Prédio (opcional)</div>
-  <select id="inp-hab-vinculo">
-    <option value="">Sem vínculo</option>
-  </select>
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-add-habito')">Cancelar</button>
-    <button class="btn btn-a" onclick="saveHabito()">Adicionar</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Adicionar ao Prédio ═══════════════════════════ -->
-<div class="mbg" id="mbg-add-predi">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-add-predi')">×</button>
-  <div class="m-title" id="add-predi-title">Novo item</div>
-  <input type="hidden" id="add-predi-tipo">
-  <div class="lbl" id="add-predi-lbl">Nome</div>
-  <input type="text" id="inp-predi-nome" placeholder="">
-  <div id="frente-extras" style="display:none">
-    <div class="lbl gap">Descrição (opcional)</div>
-    <textarea id="inp-predi-desc" rows="2" placeholder="Contexto, objetivo..."></textarea>
-    <div class="lbl gap">Prazo</div>
-    <input type="date" id="inp-predi-prazo">
-  </div>
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-add-predi')">Cancelar</button>
-    <button class="btn btn-a" onclick="savePredi()">Adicionar</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Adicionar tarefa direta ═══════════════════════ -->
-<div class="mbg" id="mbg-add-task">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-add-task')">×</button>
-  <div class="m-title">Adicionar tarefa</div>
-  <div class="lbl">Descrição</div>
-  <input type="text" id="inp-task-txt" placeholder="O que precisa ser feito?">
-  <div class="lbl gap">Prioridade</div>
-  <div class="tog-group">
-    <div class="tog" id="task-tog-urg" onclick="flipTaskTog('urg')">⚡ Urgente</div>
-    <div class="tog" id="task-tog-imp" onclick="flipTaskTog('imp')">⭐ Importante</div>
-  </div>
-  <div class="lbl">Coluna inicial</div>
-  <select id="inp-task-col">
-    <option value="afazer">A Fazer</option>
-    <option value="fazendo">Fazendo</option>
-  </select>
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-add-task')">Cancelar</button>
-    <button class="btn btn-a" onclick="saveTaskDirect()">Adicionar</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Editar item do Prédio ══════════════════════════ -->
-<div class="mbg" id="mbg-edit-predi">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-edit-predi')">×</button>
-  <div class="m-title">Editar nome</div>
-  <input type="hidden" id="edit-predi-tipo">
-  <input type="hidden" id="edit-predi-id">
-  <div class="lbl">Nome</div>
-  <input type="text" id="edit-predi-nome" placeholder="Nome do item...">
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-edit-predi')">Cancelar</button>
-    <button class="btn btn-a" onclick="saveEditPredi()">Salvar</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Vícios ════════════════════════════════════════ -->
-<div class="mbg" id="mbg-add-vicio">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-add-vicio')">×</button>
-  <div class="m-title">Rastrear vício / hábito ruim</div>
-  <div class="lbl">Comportamento a eliminar</div>
-  <input type="text" id="inp-vicio-nome" placeholder="Ex: Redes sociais de manhã, cigarro...">
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-add-vicio')">Cancelar</button>
-    <button class="btn btn-a" onclick="saveVicio()">Rastrear</button>
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL: Histórico ══════════════════════════════════════ -->
-<div class="mbg" id="mbg-history">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-history')">×</button>
-  <div class="m-title">Histórico de metas</div>
-  <div id="hist-list"></div>
-</div>
-</div>
-
-<!-- ══ MODAL: Configurações ══════════════════════════════════ -->
-<div class="mbg" id="mbg-settings">
-<div class="modal">
-  <button class="m-close" onclick="closeM('mbg-settings')">×</button>
-  <div class="m-title">Configurações</div>
-  <div class="lbl">URL do Apps Script (Google Sheets)</div>
-  <input type="text" id="inp-script-url" placeholder="https://script.google.com/macros/s/...">
-  <div class="sync-info" id="sync-info"></div>
-  <div class="m-actions">
-    <button class="btn btn-g" onclick="closeM('mbg-settings')">Fechar</button>
-    <button class="btn btn-g" onclick="triggerSync()">Sincronizar agora</button>
-    <button class="btn btn-a" onclick="saveSettings()">Salvar</button>
-  </div>
-  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--b1)">
-    <div class="lbl" style="margin-bottom:8px">Dados locais</div>
-    <div class="m-actions">
-      <button class="btn btn-g btn-sm" onclick="exportJSON()">↑ Exportar JSON</button>
-      <button class="btn btn-g btn-sm" onclick="document.getElementById('imp-file').click()">↓ Importar JSON</button>
-      <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importJSON(event)">
+  <div class="modal" style="max-width:360px;">
+    <div class="m-title" id="confirm-msg" style="margin-bottom:24px; font-size:16px;"></div>
+    <div style="display:flex; gap:12px;">
+      <button class="btn btn-g" style="flex:1" onclick="closeM('mbg-confirm')">Cancelar</button>
+      <button class="btn btn-red" style="flex:1" id="confirm-ok">Confirmar</button>
     </div>
   </div>
 </div>
+
+<!-- Modal: Novo Hábito/Vício/Desafio -->
+<div class="mbg" id="mbg-add-rotina">
+  <div class="modal">
+    <button class="m-close" onclick="closeM('mbg-add-rotina')">×</button>
+    <div class="m-title" id="add-rotina-title">Novo Item</div>
+    <input type="hidden" id="inp-rotina-tipo">
+    
+    <div class="lbl">Nome</div>
+    <input type="text" id="inp-rotina-nome" placeholder="...">
+    
+    <div id="wrap-rotina-freq" style="display:none;">
+      <div class="lbl">Meta de Frequência na Semana</div>
+      <input type="number" id="inp-rotina-freq" min="1" max="7" value="7" style="width:100px;"> <span style="color:var(--t2); font-size:13px; margin-left:8px;">dias</span>
+    </div>
+
+    <!-- Vinculação Opcional em Sanfona para Hábitos/Vícios -->
+    <div id="wrap-rotina-vinculos" style="display:none; margin-top:16px;">
+      <div class="lbl">Vincular a uma Meta (Opcional)</div>
+      <div id="rotina-vinculos-accordion"></div>
+      <input type="hidden" id="inp-rotina-vinc-id">
+      <div id="rotina-vinc-selected" style="display:none;" class="v-selected-chip"></div>
+    </div>
+
+    <div class="gap">
+      <button class="btn btn-a" style="width:100%" onclick="saveRotina()">Salvar na Rotina</button>
+    </div>
+  </div>
 </div>
 
+<!-- FIM DA PARTE 2 (COLE A PARTE 3 EXATAMENTE ABAIXO DESTA LINHA) -->
+<!-- FIM DA PARTE 2 (HTML) / INÍCIO DA PARTE 3 (JAVASCRIPT) -->
 <script>
 /* ═══════════════════════════════════════════════════════════
-   ESTADO & STORAGE
+   1. ESTADO GLOBAL & STORAGE
 ═══════════════════════════════════════════════════════════ */
-const KEY = 'canteiro_v2';
+const KEY = 'canteiro_v2_9'; // Chave atualizada para nova arquitetura
 
 function blank() {
   return {
     meta: { ultimaSync: null },
     settings: { scriptUrl: '' },
-    fundacao: { missao: '' },
-    pilares: [], horizontes: [], ciclos: [], frentes: [],
-    habitos: [], inbox: [], tarefas: [],
-    vicios: [], descarte: [], historico: []
+    fundacao: { missao: '', historico: [] },
+    pilares: [], pilares_arquivados: [],
+    horizontes: [], ciclos: [], frentes: [],
+    habitos: [], habitosArquivados: [],
+    inbox: [], tarefas: [],
+    ideias: [], tagIdeias: [],
+    vicios: [], descarte: [], historico: [],
+    contratos: [], desafios: []
   };
 }
 
-let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || blank(); } catch { return blank(); } })();
+let S = (() => { 
+  try { return JSON.parse(localStorage.getItem(KEY)) || blank(); } 
+  catch { return blank(); } 
+})();
 
 let saveTimer = null;
-function debSave() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 500); }
-
 function persist() {
-  const m = document.getElementById('inp-missao');
-  if (m) S.fundacao.missao = m.value;
   localStorage.setItem(KEY, JSON.stringify(S));
+  showToast('Salvo ✓');
   scheduleSync();
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SYNC COM SHEETS
+   2. UTILITÁRIOS E DATAS
 ═══════════════════════════════════════════════════════════ */
-let syncTimer2 = null;
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+function today() { 
+  const d = new Date();
+  return d.toLocaleDateString('sv'); // YYYY-MM-DD
+}
+
+function yesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toLocaleDateString('sv');
+}
+
+function fmtDateBR(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function getDayName(dateStr) {
+  const days = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const d = new Date(dateStr + 'T12:00:00');
+  return days[d.getDay()];
+}
+
+function esc(s) { 
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); 
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. NAVEGAÇÃO
+═══════════════════════════════════════════════════════════ */
+function setTab(tabId) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  
+  document.getElementById('sec-' + tabId).classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  
+  if (tabId === 'rotina') renderRotina();
+  else if (tabId === 'caderno') renderCaderno();
+  else if (tabId === 'metas') renderMetas();
+  else if (tabId === 'contratos') renderContratos();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. SYNC E NUVEM
+═══════════════════════════════════════════════════════════ */
+let syncTimer = null;
 function scheduleSync() {
-  clearTimeout(syncTimer2);
-  syncTimer2 = setTimeout(doSync, 4000);
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(doSync, 3000);
 }
 
 async function doSync() {
   const url = S.settings.scriptUrl;
   if (!url || !navigator.onLine) return;
-  setSyncStatus('syncing', 'Sincronizando...');
+  
   try {
-    // Pull
-    const getRes = await fetch(url + '?t=' + Date.now());
-    const remote = await getRes.json();
-    if (remote.success && remote.data && remote.data.meta) {
-      const remoteTime = new Date(remote.data.meta.ultimaSync || 0).getTime();
-      const localTime  = new Date(S.meta.ultimaSync || 0).getTime();
-      if (remoteTime > localTime) {
-        // Remote is newer — merge remote data, keep local settings
-        const localSettings = S.settings;
-        S = { ...remote.data, settings: localSettings };
-        localStorage.setItem(KEY, JSON.stringify(S));
-        renderAll();
-      }
-    }
-    // Push
     S.meta.ultimaSync = new Date().toISOString();
     localStorage.setItem(KEY, JSON.stringify(S));
     await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ data: S })
     });
-    setSyncStatus('ok', fmt(S.meta.ultimaSync));
-  } catch (e) {
-    setSyncStatus('err', 'Erro na sync');
-  }
-}
-
-async function triggerSync() {
-  clearTimeout(syncTimer2);
-  await doSync();
-}
-
-function setSyncStatus(state, label) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-lbl');
-  dot.className = 'sync-dot ' + state;
-  lbl.textContent = label || '';
-  const si = document.getElementById('sync-info');
-  if (si) si.textContent = 'Última sync: ' + (S.meta.ultimaSync ? fmt(S.meta.ultimaSync) : 'Nunca') + (S.settings.scriptUrl ? '' : ' — Configure a URL para sincronizar');
+  } catch (e) { console.error('Sync invisível falhou', e); }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   UTILITÁRIOS
+   5. ABA: ROTINA (DASHBOARD DIÁRIO & MECÂNICA BINÁRIA)
 ═══════════════════════════════════════════════════════════ */
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
-function today() { return new Date().toISOString().slice(0, 10); }
-function fmt(d) { if (!d) return ''; const dt = new Date(d); return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); }
-function fmtDate(d) { if (!d) return ''; return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function getWeekDays() {
-  const hoje = new Date();
-  const dia  = hoje.getDay();
-  const diff = dia === 0 ? -6 : 1 - dia;
-  const seg  = new Date(hoje); seg.setDate(hoje.getDate() + diff);
-  const days = [];
-  for (let i = 0; i < 7; i++) { const d = new Date(seg); d.setDate(seg.getDate() + i); days.push(d.toISOString().slice(0, 10)); }
-  return days;
+// Mapeamento de dias para checagem rápida (0=Dom, 1=Seg...)
+function isAtivoHoje(diasAtivosArray, dataReferencia) {
+  if (!diasAtivosArray || diasAtivosArray.length === 0 || diasAtivosArray.length === 7) return true;
+  const d = new Date(dataReferencia + 'T12:00:00');
+  return diasAtivosArray.includes(d.getDay());
 }
 
-function getLast30() {
-  const days = [];
-  for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d.toISOString().slice(0, 10)); }
-  return days;
-}
-
-function calcVicioStreak(regs) {
-  let s = 0; const d = new Date();
+// Lógica de Ofensiva (Streak)
+function calcularStreak(registros, tipoAlvo) {
+  let streak = 0;
+  const d = new Date(today() + 'T12:00:00');
+  const targetSucesso = tipoAlvo === 'vicio' ? 'resistiu' : 'feito';
+  
+  // Limite de checagem para trás (ex: 365 dias)
   for (let i = 0; i < 365; i++) {
-    const ds = d.toISOString().slice(0, 10);
-    if (regs[ds] === 'resistiu') { s++; d.setDate(d.getDate() - 1); } else break;
+    const ds = d.toLocaleDateString('sv');
+    const status = registros[ds];
+    
+    if (status === targetSucesso) {
+      streak++;
+    } else if (status === 'pulou') {
+      // Pular não soma nem quebra a ofensiva
+    } else if (status === 'falha' || status === 'cedi') {
+      break; // Falha declarada quebra a ofensiva
+    } else if (!status && ds !== today()) {
+      // Se não marcou nada no passado, é considerado falha por omissão e quebra
+      break;
+    }
+    d.setDate(d.getDate() - 1);
   }
-  return s;
+  return streak;
 }
 
-function getPrediLabel(id) {
-  for (const tipo of ['frentes','ciclos','horizontes','pilares']) {
-    const item = S[tipo].find(x => x.id === id);
-    if (item) return { nome: item.nome || item.texto, tipo };
+// Controle de Fechamento de Dia (Automático)
+function fecharDiasAnteriores(registros, inicioEm) {
+  // Lógica silenciosa: se dias no passado não têm registro, eles contam como falha
+  // Não precisamos gravar a falha no JSON ativamente para economizar espaço, 
+  // o cálculo de streak já assume ausência no passado como quebra.
+}
+
+// Renderização Central da Aba Rotina
+function renderRotina() {
+  const t = today();
+  document.getElementById('rotina-data-hoje').textContent = `${getDayName(t)}, ${fmtDateBR(t)}`;
+
+  // 1. DESAFIOS
+  const desafiosList = document.getElementById('list-desafios');
+  const ativosDesafios = (S.desafios || []).filter(d => d.ativo !== false);
+  let htmlDesafios = '';
+  let pendentesDesafios = 0;
+
+  if (ativosDesafios.length === 0) {
+    htmlDesafios = '<div class="empty">Nenhum desafio ativo.</div>';
+  } else {
+    htmlDesafios = ativosDesafios.map(d => {
+      const isConstruir = d.modo === 'construir';
+      const statusHoje = (d.registros || {})[t];
+      const isPendente = !statusHoje;
+      if (isPendente) pendentesDesafios++;
+
+      const inicio = new Date(d.inicioEm + 'T00:00:00');
+      const hojeDt = new Date(t + 'T00:00:00');
+      const diaAtual = Math.floor((hojeDt - inicio) / 86400000) + 1;
+      const concluido = diaAtual > d.duracaoDias;
+      const pct = Math.min(100, Math.max(0, Math.round((diaAtual - 1) / d.duracaoDias * 100)));
+
+      let btnLabel = isConstruir ? 'CONCLUIR ✓' : 'RESISTIR 🛡️';
+      let btnClass = isConstruir ? 'btn-check' : 'btn-resist';
+      let fillClass = isConstruir ? 'fill-desafio' : 'fill-vicio';
+      
+      if (statusHoje === 'feito' || statusHoje === 'resistiu') {
+        btnLabel = 'CONCLUÍDO ✓'; btnClass = 'btn-g';
+      } else if (statusHoje === 'falha' || statusHoje === 'cedi') {
+        btnLabel = 'FALHOU ✕'; btnClass = 'btn-red';
+      } else if (statusHoje === 'pulou') {
+        btnLabel = 'PULOU HOJE'; btnClass = 'btn-g';
+      }
+
+      return `
+        <div class="r-card">
+          <div class="r-card-header">
+            <div>
+              <div class="r-card-title">${esc(d.nome)}</div>
+              <div class="r-card-breadcrumb">📍 Desafio · ${d.duracaoDias} dias</div>
+            </div>
+            ${buildKebabRotina(d.id, 'desafio')}
+          </div>
+          <div class="r-card-progress-bar"><div class="r-card-progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+          <div class="r-card-footer">
+            <span class="r-card-status">DIA ${diaAtual} DE ${d.duracaoDias}</span>
+            <button class="${btnClass}" ${!isPendente || concluido ? 'disabled' : ''} onclick="marcaRotinaHoje('${d.id}', 'desafio', '${isConstruir ? 'feito' : 'resistiu'}')">${btnLabel}</button>
+          </div>
+        </div>`;
+    }).join('');
   }
+  desafiosList.innerHTML = htmlDesafios;
+
+  // 2. HÁBITOS
+  const habitosList = document.getElementById('list-habitos');
+  const ativosHabitos = (S.habitos || []).filter(h => !h.arquivado);
+  let htmlHabitos = '';
+  let pendentesHabitos = 0;
+
+  if (ativosHabitos.length === 0) {
+    htmlHabitos = '<div class="empty">Nenhum hábito configurado.</div>';
+  } else {
+    htmlHabitos = ativosHabitos.map(h => {
+      const statusHoje = (h.registros || {})[t];
+      const isAtivo = isAtivoHoje(h.diasAtivos, t);
+      
+      if (!isAtivo && !statusHoje) return ''; // Se não é dia de fazer e não tem registro, esconde
+
+      const isPendente = isAtivo && !statusHoje;
+      if (isPendente) pendentesHabitos++;
+
+      const streak = calcularStreak(h.registros || {}, 'habito');
+      const streakHtml = streak > 2 ? `<span class="streak-fire">🔥 ${streak}</span>` : '';
+
+      // Vínculo Breadcrumb
+      let vincText = '📍 Hábito Solto';
+      if (h.vinculoId) {
+        // Tenta achar na arvore de metas
+        ['frentes', 'ciclos', 'horizontes', 'pilares'].forEach(g => {
+          const v = S[g].find(x => x.id === h.vinculoId);
+          if (v) vincText = `📍 Vinculado a: ${(v.nome||v.texto||'').slice(0,25)}`;
+        });
+      }
+
+      let btnLabel = 'CHECK ✓'; let btnClass = 'btn-check';
+      if (statusHoje === 'feito') { btnLabel = 'FEITO ✓'; btnClass = 'btn-g'; }
+      else if (statusHoje === 'falha') { btnLabel = 'FALHOU ✕'; btnClass = 'btn-red'; }
+      else if (statusHoje === 'pulou') { btnLabel = 'PULOU'; btnClass = 'btn-g'; }
+
+      // Progresso da semana (Simples)
+      const weekFeitos = calcularConcluidosSemana(h.registros);
+      const metaFreq = h.freqAlvo || 7;
+      const pct = Math.min(100, (weekFeitos / metaFreq) * 100);
+
+      return `
+        <div class="r-card">
+          <div class="r-card-header">
+            <div>
+              <div class="r-card-title">${esc(h.nome)} ${streakHtml}</div>
+              <div class="r-card-breadcrumb">${vincText}</div>
+            </div>
+            ${buildKebabRotina(h.id, 'habito')}
+          </div>
+          <div class="r-card-progress-bar"><div class="r-card-progress-fill fill-habito" style="width:${pct}%"></div></div>
+          <div class="r-card-footer">
+            <span class="r-card-status">${weekFeitos}/${metaFreq} NA SEMANA</span>
+            <button class="${btnClass}" ${statusHoje ? 'disabled' : ''} onclick="marcaRotinaHoje('${h.id}', 'habito', 'feito')">${btnLabel}</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  habitosList.innerHTML = htmlHabitos || '<div class="empty">Nenhum hábito programado para hoje.</div>';
+
+  // 3. VÍCIOS
+  const viciosList = document.getElementById('list-vicios');
+  const ativosVicios = S.vicios || [];
+  let htmlVicios = '';
+  let pendentesVicios = 0;
+
+  if (ativosVicios.length === 0) {
+    htmlVicios = '<div class="empty">Nenhum vício rastreado.</div>';
+  } else {
+    htmlVicios = ativosVicios.map(v => {
+      const statusHoje = (v.registros || {})[t];
+      const isAtivo = isAtivoHoje(v.diasAtivos, t);
+      if (!isAtivo && !statusHoje) return '';
+
+      const isPendente = isAtivo && !statusHoje;
+      if (isPendente) pendentesVicios++;
+
+      const streak = calcularStreak(v.registros || {}, 'vicio');
+      const streakHtml = streak > 0 ? `<span class="streak-fire">🔥 ${streak} Dias Limpo</span>` : '';
+
+      let btnLabel = 'RESISTIR 🛡️'; let btnClass = 'btn-resist';
+      if (statusHoje === 'resistiu') { btnLabel = 'RESISTIU ✓'; btnClass = 'btn-g'; }
+      else if (statusHoje === 'cedi') { btnLabel = 'CEDI HOJE ✕'; btnClass = 'btn-red'; }
+      else if (statusHoje === 'pulou') { btnLabel = 'PULOU'; btnClass = 'btn-g'; }
+
+      return `
+        <div class="r-card">
+          <div class="r-card-header">
+            <div>
+              <div class="r-card-title">${esc(v.nome)}</div>
+              <div class="r-card-breadcrumb">${streakHtml || '📍 Resistir Hoje'}</div>
+            </div>
+            ${buildKebabRotina(v.id, 'vicio')}
+          </div>
+          <div class="r-card-footer" style="margin-top:16px;">
+            <span class="r-card-status">COMPROMISSO DIÁRIO</span>
+            <button class="${btnClass}" ${statusHoje ? 'disabled' : ''} onclick="marcaRotinaHoje('${v.id}', 'vicio', 'resistiu')">${btnLabel}</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  viciosList.innerHTML = htmlVicios || '<div class="empty">Nenhum vício rastreado para hoje.</div>';
+
+  // 4. ATUALIZAR HEADER DINÂMICO
+  atualizarBadgeHeader('badge-desafios', pendentesDesafios, '🔥', 'Desafio');
+  atualizarBadgeHeader('badge-habitos', pendentesHabitos, '🧱', 'Hábito');
+  atualizarBadgeHeader('badge-vicios', pendentesVicios, '🛡️', 'Vício');
+}
+
+function calcularConcluidosSemana(registros) {
+  if (!registros) return 0;
+  let count = 0;
+  const d = new Date();
+  const todayDay = d.getDay(); // 0-6
+  const diff = todayDay === 0 ? -6 : 1 - todayDay; // Segunda é 1
+  const seg = new Date(d); seg.setDate(d.getDate() + diff);
+  
+  for (let i = 0; i < 7; i++) {
+    const cur = new Date(seg); cur.setDate(seg.getDate() + i);
+    const dt = cur.toLocaleDateString('sv');
+    if (registros[dt] === 'feito' || registros[dt] === 'resistiu') count++;
+  }
+  return count;
+}
+
+function atualizarBadgeHeader(elId, count, icon, label) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (count === 0) {
+    el.className = 'rb-badge rb-zero';
+    el.innerHTML = `✓ Feitos`;
+  } else {
+    // Restaura a classe original baseada no ID
+    if (elId.includes('desafio')) el.className = 'rb-badge rb-desafio';
+    else if (elId.includes('habito')) el.className = 'rb-badge rb-habito';
+    else el.className = 'rb-badge rb-vicio';
+    
+    el.innerHTML = `${icon} ${count} ${label}${count > 1 ? 's' : ''}`;
+  }
+}
+
+// ── KEBAB MENU DA ROTINA ────────────────────────────────────
+function buildKebabRotina(id, tipo) {
+  const kId = `kb-rotina-${id}`;
+  return `
+    <div style="position:relative;">
+      <button class="r-card-kebab" onclick="toggleKebab('${kId}', event)">⋮</button>
+      <div class="kebab-menu" id="${kId}">
+        <button class="kebab-item" onclick="closeKebab('${kId}'); acaoKebabRotina('${id}', '${tipo}', 'pulou')">⏭ Pular Hoje</button>
+        <button class="kebab-item danger" onclick="closeKebab('${kId}'); acaoKebabRotina('${id}', '${tipo}', 'falha')">✕ Falhei Hoje</button>
+        <button class="kebab-item" onclick="closeKebab('${kId}'); acaoKebabRotina('${id}', '${tipo}', 'ontem')">↩ Preencher Ontem</button>
+      </div>
+    </div>`;
+}
+
+function toggleKebab(id, e) {
+  e.stopPropagation();
+  const menu = document.getElementById(id);
+  const isOpen = menu.classList.contains('open');
+  document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'));
+  if (!isOpen) menu.classList.add('open');
+}
+
+function closeKebab(id) {
+  const menu = document.getElementById(id);
+  if (menu) menu.classList.remove('open');
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'));
+});
+
+// Ações do botão principal (Check/Resistir)
+function marcaRotinaHoje(id, tipo, statusSucesso) {
+  const obj = getRotinaObj(id, tipo);
+  if (!obj) return;
+  if (!obj.registros) obj.registros = {};
+  
+  obj.registros[today()] = statusSucesso;
+  persist();
+  renderRotina();
+}
+
+// Ações do Kebab (Exceções)
+function acaoKebabRotina(id, tipo, acao) {
+  const obj = getRotinaObj(id, tipo);
+  if (!obj) return;
+  if (!obj.registros) obj.registros = {};
+
+  if (acao === 'pulou') {
+    obj.registros[today()] = 'pulou';
+  } else if (acao === 'falha') {
+    obj.registros[today()] = tipo === 'vicio' ? 'cedi' : 'falha';
+  } else if (acao === 'ontem') {
+    const ont = yesterday();
+    if (obj.registros[ont]) {
+      showToast('O dia de ontem já possui registro.');
+      return;
+    }
+    const successKey = tipo === 'vicio' ? 'resistiu' : 'feito';
+    obj.registros[ont] = successKey;
+    showToast('✓ Dia anterior preenchido retroativamente!');
+  }
+  
+  persist();
+  renderRotina();
+}
+
+function getRotinaObj(id, tipo) {
+  if (tipo === 'habito') return S.habitos.find(x => x.id === id);
+  if (tipo === 'vicio') return S.vicios.find(x => x.id === id);
+  if (tipo === 'desafio') return S.desafios.find(x => x.id === id);
   return null;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NAVEGAÇÃO
-═══════════════════════════════════════════════════════════ */
-function setTab(name, el) {
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  el.classList.add('active');
-  const renders = { habitos: renderHabitos, caderno: renderCaderno, predio: renderPredio, porao: renderPorao, dash: renderDash };
-  renders[name]?.();
-}
-
-function flipFloor(id) { document.getElementById('fl-' + id).classList.toggle('open'); }
+</script>
+<!-- FIM DA PARTE 3 (COLE A PARTE 4 EXATAMENTE ABAIXO DESTA LINHA) -->
 
 /* ═══════════════════════════════════════════════════════════
-   MODAIS
-═══════════════════════════════════════════════════════════ */
-function openM(id) { document.getElementById(id).classList.add('open'); }
-function closeM(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.mbg').forEach(bg => bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); }));
-
-function showConfirm(msg, onOk) {
-  document.getElementById('confirm-msg').textContent = msg;
-  const btn = document.getElementById('confirm-ok');
-  const newBtn = btn.cloneNode(true);
-  btn.parentNode.replaceChild(newBtn, btn);
-  newBtn.onclick = () => { closeM('mbg-confirm'); onOk(); };
-  openM('mbg-confirm');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   HÁBITOS
-═══════════════════════════════════════════════════════════ */
-const DAY_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-const HAB_CYCLE = ['feito', 'parcial', 'faltou', null];
-
-function renderHabitos() {
-  const week = getWeekDays();
-  const t = today();
-  const inicio = fmtDate(week[0]);
-  const fim    = fmtDate(week[6]);
-  document.getElementById('week-range').textContent = `Semana: ${inicio} — ${fim}`;
-
-  // Global week stat
-  let totalSlots = 0, totalFeito = 0;
-  S.habitos.forEach(h => {
-    week.forEach(d => {
-      totalSlots++;
-      if ((h.registros || {})[d] === 'feito') totalFeito++;
-    });
-  });
-  const pct = totalSlots ? Math.round(totalFeito / totalSlots * 100) : 0;
-  document.getElementById('week-stat').textContent = S.habitos.length ? `${pct}% da semana` : '';
-
-  const list = document.getElementById('list-habitos');
-  if (S.habitos.length === 0) {
-    list.innerHTML = '<div class="empty">Nenhum hábito ainda.<br>Adicione rotinas que quer rastrear.</div>';
-    return;
-  }
-
-  list.innerHTML = S.habitos.map(h => {
-    const regs = h.registros || {};
-    const link = h.vinculoId ? getPrediLabel(h.vinculoId) : null;
-    const weekFeito = week.filter(d => regs[d] === 'feito').length;
-    const days = week.map((d, i) => {
-      const est = regs[d] || '';
-      const isToday = d === t;
-      const icon = est === 'feito' ? '✓' : est === 'parcial' ? '½' : est === 'faltou' ? '✕' : DAY_LABELS[i].slice(0,1);
-      return `<div class="day-cell${est ? ' ' + est : ''}${isToday ? ' today' : ''}" onclick="cycleHabitoDay('${h.id}','${d}')" title="${DAY_LABELS[i]}">${icon}</div>`;
-    }).join('');
-    return `<div class="habito-row">
-      <div style="flex:1;min-width:0">
-        <div class="habito-nome">${esc(h.nome)}</div>
-        ${link ? `<span class="habito-vinculo">↳ ${esc(link.tipo)}: ${esc(link.nome.slice(0,22))}</span>` : ''}
-      </div>
-      <div class="days-grid">${days}</div>
-      <div class="habito-stat">${weekFeito}/7</div>
-      <button class="habito-del" onclick="removeHabito('${h.id}')" title="Remover">×</button>
-    </div>`;
-  }).join('');
-}
-
-function cycleHabitoDay(id, date) {
-  const h = S.habitos.find(x => x.id === id);
-  if (!h) return;
-  if (!h.registros) h.registros = {};
-  const cur = h.registros[date] || null;
-  const idx = HAB_CYCLE.indexOf(cur);
-  const next = HAB_CYCLE[(idx === -1 ? 0 : idx + 1) % HAB_CYCLE.length];
-  if (next === null) delete h.registros[date];
-  else h.registros[date] = next;
-  persist(); renderHabitos();
-}
-
-function removeHabito(id) {
-  showConfirm('Remover este hábito? O histórico de dados será preservado nos filtros do dashboard.', () => {
-    const h = S.habitos.find(x => x.id === id);
-    if (h) {
-      if (!S.habitosArquivados) S.habitosArquivados = [];
-      S.habitosArquivados.push({ ...h, removidoEm: today() });
-    }
-    S.habitos = S.habitos.filter(x => x.id !== id);
-    // Remove vínculo de hábitos arquivados de objetos do prédio
-    persist(); renderHabitos();
-  });
-}
-
-function openM_addHabito() {
-  // populate vinculo select
-  const sel = document.getElementById('inp-hab-vinculo');
-  sel.innerHTML = '<option value="">Sem vínculo</option>';
-  ['frentes','ciclos','horizontes','pilares'].forEach(tipo => {
-    S[tipo].filter(x => x.status === 'ativo').forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.id;
-      opt.textContent = `[${tipo}] ${(item.nome || item.texto || '').slice(0,40)}`;
-      sel.appendChild(opt);
-    });
-  });
-  document.getElementById('inp-hab-nome').value = '';
-  openM('mbg-add-habito');
-}
-
-function saveHabito() {
-  const nome = document.getElementById('inp-hab-nome').value.trim();
-  if (!nome) return document.getElementById('inp-hab-nome').focus();
-  const vinculoId = document.getElementById('inp-hab-vinculo').value;
-  S.habitos.push({ id: uid(), nome, vinculoId: vinculoId || null, registros: {} });
-  persist(); closeM('mbg-add-habito'); renderHabitos();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   CADERNO — INBOX
+   6. ABA: CADERNO (INBOX E KANBAN VERTICAL)
 ═══════════════════════════════════════════════════════════ */
 function addInbox() {
   const el = document.getElementById('inp-inbox');
-  const txt = el.value.trim(); if (!txt) return;
-  S.inbox.push({ id: uid(), texto: txt, data: today(), status: 'pendente' });
-  el.value = ''; persist(); renderCaderno();
+  const txt = el.value.trim(); 
+  if (!txt) return;
+  
+  // Regra: Inbox recebe o mais novo no topo absoluto (unshift em vez de push)
+  S.inbox.unshift({ id: uid(), texto: txt, data: today(), status: 'pendente' });
+  el.value = ''; 
+  persist(); 
+  renderCaderno();
 }
 
 function renderCaderno() {
-  renderInbox();
-  renderKanban();
-}
-
-function renderInbox() {
+  // Inbox
   const pend = S.inbox.filter(x => x.status === 'pendente');
   document.getElementById('inbox-cnt').textContent = pend.length;
   const list = document.getElementById('list-inbox');
+  
   if (pend.length === 0) {
-    list.innerHTML = '<div class="empty" style="padding:12px 0">Caixa limpa — tudo triado ✓</div>';
-    return;
-  }
-  list.innerHTML = pend.map(item => `
-    <div class="inbox-item">
-      <div style="flex:1">
+    list.innerHTML = '<div class="empty">Caixa limpa. Nenhuma ideia pendente.</div>';
+  } else {
+    list.innerHTML = pend.map(item => `
+      <div class="inbox-item">
         <div class="inbox-txt">${esc(item.texto)}</div>
-        <div class="inbox-meta">${fmtDate(item.data)}</div>
+        <div class="inbox-actions">
+          <button class="btn btn-g" onclick="quickDiscard('${item.id}')">Descartar</button>
+          <button class="btn btn-a" onclick="openTriage('${item.id}')">Triar Ideia →</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Kanban Vertical
+  const afazer = S.tarefas.filter(t => t.coluna === 'afazer');
+  const fazendo = S.tarefas.filter(t => t.coluna === 'fazendo');
+  const feito = S.tarefas.filter(t => t.coluna === 'feito');
+
+  document.getElementById('cnt-afazer').textContent = afazer.length;
+  document.getElementById('cnt-fazendo').textContent = fazendo.length;
+  document.getElementById('cnt-feito').textContent = feito.length;
+
+  document.getElementById('col-afazer').innerHTML = buildKanbanList(afazer, 'Mover para Fazendo →', 'fazendo');
+  document.getElementById('col-fazendo').innerHTML = buildKanbanList(fazendo, 'Concluir ✓', 'feito', 'done');
+  document.getElementById('col-feito').innerHTML = buildKanbanList(feito, 'Arquivar', 'arquivar', 'done');
+}
+
+function buildKanbanList(tasks, btnLabel, nextCol, btnClassExtra = '') {
+  if (tasks.length === 0) return '<div style="color:var(--t3); font-size:12px; padding:8px 0;">Vazio</div>';
+  
+  return tasks.map(t => `
+    <div class="k-card">
+      <div class="k-card-title">${esc(t.texto)}</div>
+      ${t.desc ? `<div class="k-card-desc" onclick="this.classList.toggle('expanded')" title="Toque para expandir">${esc(t.desc)}...</div>` : ''}
+      <div class="k-card-footer">
+        <button class="r-card-kebab" onclick="deleteTask('${t.id}')" title="Apagar Tarefa">🗑️</button>
+        <button class="k-card-btn ${btnClassExtra}" onclick="moveTask('${t.id}', '${nextCol}')">${btnLabel}</button>
       </div>
-      <button class="triage-btn" onclick="openTriage('${item.id}')">Triar →</button>
-      <button class="xbtn" onclick="quickDiscard('${item.id}')" title="Descartar">×</button>
     </div>`).join('');
 }
 
-function quickDiscard(id) {
-  const item = S.inbox.find(x => x.id === id); if (!item) return;
-  item.status = 'descartado';
-  S.descarte.push({ id: uid(), texto: item.texto, data: today() });
-  persist(); renderInbox();
-}
-
-/* ── Triagem ─────────────────────────────────────────────── */
-let tID = null, tUrg = false, tImp = false;
-
 function openTriage(id) {
-  tID = id; tUrg = false; tImp = false;
   const item = S.inbox.find(x => x.id === id);
-  document.getElementById('triage-txt').textContent = item.texto;
-  ['t-s1','t-s2','t-s3'].forEach((s, i) => document.getElementById(s).style.display = i === 0 ? 'block' : 'none');
-  document.getElementById('tog-urg').classList.remove('on');
-  document.getElementById('tog-imp').classList.remove('on');
+  if (!item) return;
+  document.getElementById('inp-triage-id').value = item.id;
+  document.getElementById('inp-triage-title').value = item.texto;
+  document.getElementById('inp-triage-desc').value = '';
   openM('mbg-triage');
 }
 
-function tAct(action) {
-  document.getElementById('t-s1').style.display = 'none';
-  if (action === 'discard') {
-    const item = S.inbox.find(x => x.id === tID);
-    if (item) { item.status = 'descartado'; S.descarte.push({ id: uid(), texto: item.texto, data: today() }); }
-    persist(); closeM('mbg-triage'); renderCaderno(); return;
-  }
-  if (action === 'task') document.getElementById('t-s2').style.display = 'block';
-  else { document.getElementById('inp-triage-proj').value = ''; document.getElementById('t-s3').style.display = 'block'; }
-}
+function triageAction(action) {
+  const id = document.getElementById('inp-triage-id').value;
+  const item = S.inbox.find(x => x.id === id);
+  if (!item) return;
 
-function tBack() {
-  document.getElementById('t-s1').style.display = 'block';
-  document.getElementById('t-s2').style.display = 'none';
-  document.getElementById('t-s3').style.display = 'none';
-}
-
-function flipTog(type) {
-  if (type === 'urg') { tUrg = !tUrg; document.getElementById('tog-urg').classList.toggle('on', tUrg); }
-  else { tImp = !tImp; document.getElementById('tog-imp').classList.toggle('on', tImp); }
-}
-
-function tConfirmTask() {
-  const item = S.inbox.find(x => x.id === tID);
-  if (item) {
+  if (action === 'delete') {
+    item.status = 'descartado';
+  } else if (action === 'task') {
+    const title = document.getElementById('inp-triage-title').value.trim();
+    const desc = document.getElementById('inp-triage-desc').value.trim();
     item.status = 'triado';
-    S.tarefas.push({ id: uid(), texto: item.texto, urgente: tUrg, importante: tImp, coluna: 'afazer', criadoEm: today() });
+    S.tarefas.unshift({ id: uid(), texto: title || item.texto, desc: desc, coluna: 'afazer', criadoEm: today() });
   }
-  persist(); closeM('mbg-triage'); renderCaderno();
+
+  persist();
+  closeM('mbg-triage');
+  renderCaderno();
 }
 
-function tConfirmProj() {
-  const nome = document.getElementById('inp-triage-proj').value.trim();
-  if (!nome) return document.getElementById('inp-triage-proj').focus();
-  const item = S.inbox.find(x => x.id === tID);
-  if (item) item.status = 'triado';
-  S.frentes.push({ id: uid(), nome, descricao: item ? item.texto : '', prazo: '', status: 'ativo', rodada: 1, criadoEm: today() });
-  persist(); closeM('mbg-triage'); renderCaderno(); renderPredio();
+function moveTask(id, nextCol) {
+  if (nextCol === 'arquivar') {
+    S.tarefas = S.tarefas.filter(t => t.id !== id);
+  } else {
+    const task = S.tarefas.find(t => t.id === id);
+    if (task) task.coluna = nextCol;
+  }
+  persist();
+  renderCaderno();
 }
 
-/* ── Kanban ──────────────────────────────────────────────── */
-const COLUNAS = ['afazer', 'fazendo', 'feito'];
-const COL_LABELS = { afazer: 'A Fazer', fazendo: 'Fazendo', feito: 'Feito' };
-const PRI_LABELS = { '11': 'Fazer agora', '10': 'Agendar', '01': 'Delegar', '00': 'Eliminar' };
-
-function renderKanban() {
-  COLUNAS.forEach(col => {
-    const tasks = S.tarefas.filter(t => t.coluna === col);
-    document.getElementById('cnt-' + col).textContent = tasks.length;
-    // Sort by priority: 11 first
-    const sorted = tasks.slice().sort((a, b) => {
-      const pa = (a.importante?'1':'0')+(a.urgente?'1':'0');
-      const pb = (b.importante?'1':'0')+(b.urgente?'1':'0');
-      return pb.localeCompare(pa);
-    });
-    document.getElementById('col-' + col).innerHTML = sorted.length === 0
-      ? '<div style="font-size:11px;color:var(--t3);padding:4px 0;font-family:Georgia,serif">Vazio</div>'
-      : sorted.map(t => {
-          const pk = (t.importante?'1':'0')+(t.urgente?'1':'0');
-          const mvs = COLUNAS.filter(c => c !== col).map(c =>
-            `<button class="k-mv-btn" onclick="moveTask('${t.id}','${c}')">${COL_LABELS[c]}</button>`).join('');
-          return `<div class="k-card">
-            <div class="k-card-top">
-              <span class="k-card-txt">${esc(t.texto)}</span>
-              <button class="k-card-del" onclick="removeTask('${t.id}')">×</button>
-            </div>
-            <div><span class="k-tag p${pk}">${PRI_LABELS[pk]}</span></div>
-            <div class="k-move">${mvs}</div>
-          </div>`;
-        }).join('');
-  });
+function openDirectTask() {
+  document.getElementById('inp-triage-id').value = 'NEW';
+  document.getElementById('inp-triage-title').value = '';
+  document.getElementById('inp-triage-desc').value = '';
+  openM('mbg-triage');
 }
 
-function moveTask(id, coluna) {
-  const t = S.tarefas.find(x => x.id === id);
-  if (!t) return;
-  t.coluna = coluna;
-  if (coluna === 'feito') t.concluidoEm = today();
-  persist(); renderKanban();
+function deleteTask(id) {
+  S.tarefas = S.tarefas.filter(t => t.id !== id);
+  persist();
+  renderCaderno();
 }
 
-function removeTask(id) {
-  showConfirm('Remover esta tarefa?', () => {
-    S.tarefas = S.tarefas.filter(x => x.id !== id);
-    persist(); renderKanban();
-  });
-}
-
-/* toggles for add-task modal */
-let taskTogUrg = false, taskTogImp = false;
-function flipTaskTog(type) {
-  if (type === 'urg') { taskTogUrg = !taskTogUrg; document.getElementById('task-tog-urg').classList.toggle('on', taskTogUrg); }
-  else { taskTogImp = !taskTogImp; document.getElementById('task-tog-imp').classList.toggle('on', taskTogImp); }
-}
-
-function saveTaskDirect() {
-  const txt = document.getElementById('inp-task-txt').value.trim();
-  if (!txt) return document.getElementById('inp-task-txt').focus();
-  const col = document.getElementById('inp-task-col').value;
-  S.tarefas.push({ id: uid(), texto: txt, urgente: taskTogUrg, importante: taskTogImp, coluna: col, criadoEm: today() });
-  document.getElementById('inp-task-txt').value = '';
-  taskTogUrg = false; taskTogImp = false;
-  document.getElementById('task-tog-urg').classList.remove('on');
-  document.getElementById('task-tog-imp').classList.remove('on');
-  persist(); closeM('mbg-add-task'); renderKanban();
+function quickDiscard(id) {
+  const item = S.inbox.find(x => x.id === id);
+  if (item) item.status = 'descartado';
+  persist();
+  renderCaderno();
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PRÉDIO
+   7. ABA: METAS (CASCATA E HIERARQUIA)
 ═══════════════════════════════════════════════════════════ */
-const PREDI_CONFIGS = {
-  frentes:    { label: 'Nova frente',    lbl: 'Nome da frente',    extras: true  },
-  ciclos:     { label: 'Novo ciclo',     lbl: 'Meta trimestral',   extras: false },
-  horizontes: { label: 'Novo horizonte', lbl: 'Meta épica',        extras: false },
-  pilares:    { label: 'Novo pilar',     lbl: 'Área de foco',      extras: false }
-};
-
-function renderPredio() {
-  // Missão
-  const m = document.getElementById('inp-missao');
-  if (m) m.value = S.fundacao.missao || '';
-
-  ['frentes','ciclos','horizontes','pilares'].forEach(tipo => renderPrediSection(tipo));
-
-  // Ciclos limit
-  const limit = S.ciclos.filter(x => !x.status || x.status === 'ativo').length >= 3;
-  document.getElementById('warn-ciclos').style.display = limit ? 'block' : 'none';
-  document.getElementById('btn-add-ciclo').style.display = limit ? 'none' : 'inline-flex';
+function renderMetas() {
+  renderMetasList('pilares', '📍 Área de Foco');
+  renderMetasList('horizontes', '🎯 Longo Prazo');
+  renderMetasList('ciclos', '📅 Trimestre');
+  renderMetasList('frentes', '⚡ Ação');
 }
 
-function renderPrediSection(tipo) {
-  const list = document.getElementById('list-' + tipo);
-  const items = S[tipo].filter(x => !x.status || x.status === 'ativo');
-
+function renderMetasList(tipo, labelPrefix) {
+  const list = document.getElementById(`list-${tipo}`);
+  const items = (S[tipo] || []).filter(x => !x.status || x.status === 'ativo');
+  
   if (items.length === 0) {
-    list.innerHTML = '<div class="empty" style="padding:10px 0">Nenhum item ativo.</div>';
+    list.innerHTML = '<div class="empty">Nenhum item adicionado.</div>';
     return;
   }
 
   list.innerHTML = items.map(item => {
-    const nome = item.nome || item.texto || '';
-    const rodadaTag = item.rodada > 1 ? `<span class="pi-rodada">${item.rodada}ª rodada</span>` : '';
-
-    // Linked habits progress
-    const habsVinculados = S.habitos.filter(h => h.vinculoId === item.id);
-    const week = getWeekDays();
-    let habSection = '';
-    if (habsVinculados.length > 0) {
-      const rows = habsVinculados.map(h => {
-        const regs = h.registros || {};
-        const feito = week.filter(d => regs[d] === 'feito').length;
-        const pct   = Math.round(feito / 7 * 100);
-        return `<div class="pi-hab-row">
-          <span style="flex:1;font-size:12px;color:var(--t2)">${esc(h.nome)}</span>
-          <div class="pi-hab-bar"><div class="pi-hab-fill" style="width:${pct}%"></div></div>
-          <span style="font-size:11px;color:var(--t2);min-width:28px;text-align:right">${pct}%</span>
-        </div>`;
-      }).join('');
-      habSection = `<div class="pi-habitos">
-        <button class="pi-hab-toggle" onclick="toggleHabSection('${item.id}')">▸ Hábitos vinculados (${habsVinculados.length})</button>
-        <div class="pi-hab-list" id="pi-hs-${item.id}">${rows}</div>
-      </div>`;
+    // Buscar Trilha (Breadcrumb visual obrigatório)
+    let trilha = '';
+    if (item.vincId) {
+      const parent = buscarNomePai(item.vincId);
+      if (parent) trilha = `↳ Vinculado a: ${parent.slice(0, 30)}`;
     }
 
-    // Frentes get extra info
-    let metaRow = '';
-    if (tipo === 'frentes') {
-      const parts = [];
-      if (item.prazo) parts.push(`até ${fmtDate(item.prazo)}`);
-      if (parts.length) metaRow = `<div class="pi-meta">${parts.map(p => `<span>${esc(p)}</span>`).join('')}</div>`;
+    let badgePrazo = '';
+    if (tipo === 'horizontes' && item.anoAlvo) badgePrazo = `<span class="m-badge-prazo">Alvo: ${item.anoAlvo}</span>`;
+    if ((tipo === 'frentes' || tipo === 'ciclos') && item.prazo) {
+      const vencido = item.prazo < today() ? 'vencido' : '';
+      badgePrazo = `<span class="m-badge-prazo ${vencido}">Prazo: ${fmtDateBR(item.prazo)}</span>`;
     }
 
-    return `<div class="predio-item">
-      <div class="pi-top">
-        <div style="flex:1">
-          <span class="pi-txt">${esc(nome)}${rodadaTag}</span>
-          ${item.descricao ? `<div class="pi-meta">${esc(item.descricao.slice(0,80))}${item.descricao.length>80?'…':''}</div>` : ''}
-          ${metaRow}
+    return `
+      <div class="m-item">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div class="m-item-title">${esc(item.nome || item.texto)}</div>
+          <button class="r-card-kebab" onclick="concluirMeta('${tipo}', '${item.id}')" title="Concluir">✓</button>
         </div>
-      </div>
-      ${habSection}
-      <div class="pi-actions">
-        <button class="pi-btn" onclick="openEditPredi('${tipo}','${item.id}')">✎ Editar</button>
-        <button class="pi-btn close-btn" onclick="openCloseGoal('${tipo}','${item.id}')">Encerrar →</button>
-        <button class="pi-btn" onclick="removePredi('${tipo}','${item.id}')">Remover</button>
-      </div>
-    </div>`;
+        <div class="m-item-meta">
+          <span style="color:var(--roxo); font-weight:600;">${labelPrefix}</span>
+          ${badgePrazo}
+        </div>
+        ${trilha ? `<div style="font-size:10px; color:var(--t3); margin-top:8px;">${trilha}</div>` : ''}
+      </div>`;
   }).join('');
 }
 
-function toggleHabSection(id) {
-  const el = document.getElementById('pi-hs-' + id);
-  if (!el) return;
-  el.classList.toggle('open');
-  const btn = el.previousElementSibling;
-  if (btn) btn.textContent = el.classList.contains('open')
-    ? btn.textContent.replace('▸','▾')
-    : btn.textContent.replace('▾','▸');
+function buscarNomePai(id) {
+  const all = [...(S.pilares||[]), ...(S.horizontes||[]), ...(S.ciclos||[])];
+  const p = all.find(x => x.id === id);
+  return p ? (p.nome || p.texto) : '';
 }
 
-function openAddPredi(tipo) {
-  const cfg = PREDI_CONFIGS[tipo];
-  document.getElementById('add-predi-title').textContent = cfg.label;
-  document.getElementById('add-predi-tipo').value = tipo;
-  document.getElementById('add-predi-lbl').textContent = cfg.lbl;
-  document.getElementById('inp-predi-nome').value = '';
-  document.getElementById('frente-extras').style.display = cfg.extras ? 'block' : 'none';
-  if (cfg.extras) {
-    document.getElementById('inp-predi-desc').value = '';
-    document.getElementById('inp-predi-prazo').value = '';
-  }
-  openM('mbg-add-predi');
+function concluirMeta(tipo, id) {
+  const items = S[tipo];
+  const item = items.find(x => x.id === id);
+  if (!item) return;
+
+  S.historico.push({
+    id: uid(), tipo: tipo, nome: item.nome || item.texto, 
+    statusFinal: 'concluido', encerradoEm: today(),
+    encerradoEmMs: Date.now() // Timestamp exato para Contratos
+  });
+  
+  S[tipo] = items.filter(x => x.id !== id);
+  persist();
+  renderMetas();
+  renderContratos(); // Atualiza contratos que possam ter destravado
+  showToast('✓ Meta Concluída!');
 }
 
-function savePredi() {
-  const tipo = document.getElementById('add-predi-tipo').value;
-  const nome = document.getElementById('inp-predi-nome').value.trim();
-  if (!nome) return document.getElementById('inp-predi-nome').focus();
-  if (tipo === 'ciclos' && S.ciclos.filter(x => x.status === 'ativo').length >= 3) return;
-  const item = { id: uid(), status: 'ativo', rodada: 1, criadoEm: today() };
-  if (tipo === 'frentes') {
-    item.nome = nome;
-    item.descricao = document.getElementById('inp-predi-desc').value.trim();
-    item.prazo = document.getElementById('inp-predi-prazo').value;
+function openAddGoal(tipo) {
+  document.getElementById('inp-goal-tipo').value = tipo;
+  document.getElementById('inp-goal-nome').value = '';
+  document.getElementById('inp-goal-desc').value = '';
+  document.getElementById('inp-goal-ano').value = '';
+  document.getElementById('inp-goal-prazo').value = '';
+  
+  const wDesc = document.getElementById('wrap-goal-desc');
+  const wAno = document.getElementById('wrap-goal-ano');
+  const wPrazo = document.getElementById('wrap-goal-prazo');
+  const wVinc = document.getElementById('wrap-goal-vinculos');
+  
+  wDesc.style.display = (tipo === 'horizontes' || tipo === 'ciclos' || tipo === 'frentes') ? 'block' : 'none';
+  wAno.style.display = (tipo === 'horizontes') ? 'block' : 'none';
+  wPrazo.style.display = (tipo === 'frentes' || tipo === 'ciclos') ? 'block' : 'none';
+  
+  // Vinculação em Sanfona
+  if (tipo !== 'pilares') {
+    wVinc.style.display = 'block';
+    let parentType = ''; let parentLabel = '';
+    if (tipo === 'horizontes') { parentType = 'pilares'; parentLabel = 'Áreas da Vida'; }
+    if (tipo === 'ciclos') { parentType = 'horizontes'; parentLabel = 'Metas de Longo Prazo'; }
+    if (tipo === 'frentes') { parentType = 'ciclos'; parentLabel = 'Metas Trimestrais'; }
+    
+    const parents = (S[parentType] || []).filter(x => !x.status || x.status === 'ativo');
+    const acc = document.getElementById('goal-vinculos-accordion');
+    
+    if (parents.length > 0) {
+      acc.innerHTML = `
+        <details class="v-accordion">
+          <summary>Escolher ${parentLabel}</summary>
+          <div class="v-list">
+            ${parents.map(p => `<div class="v-item" onclick="selectGoalVinc('${p.id}', '${esc(p.nome||p.texto)}')">${esc(p.nome||p.texto)}</div>`).join('')}
+          </div>
+        </details>`;
+    } else {
+      acc.innerHTML = `<div style="font-size:11px; color:var(--t3);">Nenhum item disponível em ${parentLabel}.</div>`;
+    }
   } else {
-    item.texto = nome;
+    wVinc.style.display = 'none';
   }
+
+  document.getElementById('inp-goal-vinc-id').value = '';
+  document.getElementById('goal-vinc-selected').style.display = 'none';
+
+  const titles = { pilares:'Nova Área', horizontes:'Novo Longo Prazo', ciclos:'Novo Trimestre', frentes:'Nova Ação' };
+  document.getElementById('add-goal-title').textContent = titles[tipo];
+  
+  openM('mbg-add-goal');
+}
+
+function selectGoalVinc(id, nome) {
+  document.getElementById('inp-goal-vinc-id').value = id;
+  const chip = document.getElementById('goal-vinc-selected');
+  chip.innerHTML = `Vinculado: ${nome} <span style="cursor:pointer; color:var(--t2); margin-left:8px;" onclick="clearGoalVinc()">×</span>`;
+  chip.style.display = 'inline-flex';
+}
+
+function clearGoalVinc() {
+  document.getElementById('inp-goal-vinc-id').value = '';
+  document.getElementById('goal-vinc-selected').style.display = 'none';
+}
+
+function saveGoal() {
+  const tipo = document.getElementById('inp-goal-tipo').value;
+  const nome = document.getElementById('inp-goal-nome').value.trim();
+  if (!nome) return;
+
+  // Trava do Futuro (Longo Prazo)
+  let anoAlvo = null;
+  if (tipo === 'horizontes') {
+    anoAlvo = parseInt(document.getElementById('inp-goal-ano').value);
+    const anoAtual = new Date().getFullYear();
+    if (!anoAlvo || anoAlvo <= anoAtual) {
+      showToast('O Ano Alvo deve ser no futuro (ex: ' + (anoAtual + 1) + ')');
+      return;
+    }
+  }
+
+  const desc = document.getElementById('inp-goal-desc').value.trim();
+  const prazo = document.getElementById('inp-goal-prazo').value;
+  const vincId = document.getElementById('inp-goal-vinc-id').value;
+
+  const item = { id: uid(), nome: nome, texto: nome, status: 'ativo', criadoEm: today() };
+  if (desc) item.descricao = desc;
+  if (anoAlvo) item.anoAlvo = anoAlvo;
+  if (prazo) item.prazo = prazo;
+  if (vincId) item.vincId = vincId;
+
   S[tipo].push(item);
-  persist(); closeM('mbg-add-predi'); renderPredio();
-}
-
-function removePredi(tipo, id) {
-  showConfirm('Remover este item permanentemente?', () => {
-    S[tipo] = S[tipo].filter(x => x.id !== id);
-    persist(); renderPredio();
-  });
-}
-
-function openEditPredi(tipo, id) {
-  const item = S[tipo].find(x => x.id === id); if (!item) return;
-  document.getElementById('edit-predi-tipo').value = tipo;
-  document.getElementById('edit-predi-id').value   = id;
-  document.getElementById('edit-predi-nome').value = item.nome || item.texto || '';
-  openM('mbg-edit-predi');
-}
-
-function saveEditPredi() {
-  const tipo = document.getElementById('edit-predi-tipo').value;
-  const id   = document.getElementById('edit-predi-id').value;
-  const nome = document.getElementById('edit-predi-nome').value.trim();
-  if (!nome) return document.getElementById('edit-predi-nome').focus();
-  const item = S[tipo].find(x => x.id === id);
-  if (item) { if ('nome' in item) item.nome = nome; else item.texto = nome; }
-  persist(); closeM('mbg-edit-predi'); renderPredio();
-}
-
-/* ── Fechar meta ─────────────────────────────────────────── */
-let cgTipo = null, cgId = null;
-
-function openCloseGoal(tipo, id) {
-  cgTipo = tipo; cgId = id;
-  const item = S[tipo].find(x => x.id === id);
-  const nome = item ? (item.nome || item.texto || '') : '';
-  document.getElementById('cg-txt').textContent = nome;
-  openM('mbg-close-goal');
-}
-
-function closeGoalConfirm(status) {
-  const item = S[cgTipo].find(x => x.id === cgId);
-  if (!item) return closeM('mbg-close-goal');
-  const nome = item.nome || item.texto || '';
-
-  showConfirm(`Marcar "${nome.slice(0,40)}" como ${status}?`, () => {
-    // Move to historico
-    S.historico.push({
-      id: uid(), tipo: cgTipo, nome, statusFinal: status,
-      rodada: item.rodada || 1, criadoEm: item.criadoEm || '', encerradoEm: today()
-    });
-
-    if (status === 'continua') {
-      // Create new item
-      const newItem = { ...item, id: uid(), rodada: (item.rodada || 1) + 1, criadoEm: today() };
-      S[cgTipo].push(newItem);
-    }
-
-    // Remove original
-    S[cgTipo] = S[cgTipo].filter(x => x.id !== cgId);
-    persist(); closeM('mbg-close-goal'); renderPredio();
-  });
-  closeM('mbg-close-goal');
+  persist();
+  closeM('mbg-add-goal');
+  renderMetas();
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PORÃO
+   8. ABA: CONTRATOS E RECOMPENSAS (Relógio Exato)
 ═══════════════════════════════════════════════════════════ */
-const VICIO_CYCLE = ['resistiu', 'cedi', null];
+function openAddContrato() {
+  document.getElementById('inp-contrato-rec').value = '';
+  document.getElementById('inp-contrato-alvo-id').value = '';
+  document.getElementById('contrato-alvo-selected').style.display = 'none';
 
-function renderPorao() {
-  renderVicios();
-  renderDescarte();
+  // Preencher Sanfona de Alvos
+  const list = document.getElementById('contrato-alvos-list');
+  let html = '';
+  
+  // Metas disponíveis
+  const metas = [...(S.frentes||[]), ...(S.ciclos||[]), ...(S.horizontes||[])].filter(x => !x.status || x.status === 'ativo');
+  if (metas.length > 0) {
+    html += `<div style="padding:4px 12px; font-size:10px; font-weight:bold; color:var(--roxo);">METAS</div>`;
+    html += metas.map(m => `<div class="v-item" onclick="selectContratoAlvo('${m.id}', 'meta', '${esc(m.nome||m.texto)}')">${esc(m.nome||m.texto)}</div>`).join('');
+  }
+
+  // Hábitos disponíveis
+  const habitos = (S.habitos||[]).filter(h => !h.arquivado);
+  if (habitos.length > 0) {
+    html += `<div style="padding:4px 12px; font-size:10px; font-weight:bold; color:var(--verde); margin-top:8px;">HÁBITOS (1 Semana Perfeita)</div>`;
+    html += habitos.map(h => `<div class="v-item" onclick="selectContratoAlvo('${h.id}', 'habito', '${esc(h.nome)}')">${esc(h.nome)}</div>`).join('');
+  }
+
+  list.innerHTML = html || '<div class="v-item">Nenhum item disponível para vincular.</div>';
+  openM('mbg-add-contrato');
 }
 
-function renderVicios() {
-  const list = document.getElementById('list-vicios');
-  const t = today();
-  const last30 = getLast30();
+function selectContratoAlvo(id, tipo, nome) {
+  document.getElementById('inp-contrato-alvo-id').value = id;
+  document.getElementById('inp-contrato-alvo-tipo').value = tipo;
+  const chip = document.getElementById('contrato-alvo-selected');
+  chip.innerHTML = `Gatilho: ${nome} <span style="cursor:pointer; color:var(--t2); margin-left:8px;" onclick="clearContratoAlvo()">×</span>`;
+  chip.style.display = 'inline-flex';
+}
 
-  if (S.vicios.length === 0) {
-    list.innerHTML = '<div class="empty">Nenhum vício rastreado.<br>Adicione comportamentos a eliminar.</div>';
+function clearContratoAlvo() {
+  document.getElementById('inp-contrato-alvo-id').value = '';
+  document.getElementById('contrato-alvo-selected').style.display = 'none';
+}
+
+function saveContrato() {
+  const rec = document.getElementById('inp-contrato-rec').value.trim();
+  const alvoId = document.getElementById('inp-contrato-alvo-id').value;
+  const alvoTipo = document.getElementById('inp-contrato-alvo-tipo').value;
+
+  if (!rec || !alvoId) { showToast('Preencha a recompensa e selecione o gatilho.'); return; }
+
+  S.contratos.push({
+    id: uid(), recompensa: rec, tipoAlvo: alvoTipo, alvoId: alvoId,
+    renovadoEmMs: Date.now(), // RELÓGIO DA RENOVAÇÃO: Marco zero do contrato
+    resgatado: false
+  });
+
+  persist();
+  closeM('mbg-add-contrato');
+  renderContratos();
+}
+
+function renderContratos() {
+  const list = document.getElementById('list-contratos');
+  const ativos = (S.contratos || []).filter(c => !c.resgatado);
+
+  if (ativos.length === 0) {
+    list.innerHTML = '<div class="empty">Nenhum contrato pendente. Firme um acordo com você mesmo.</div>';
     return;
   }
 
-  list.innerHTML = S.vicios.map(v => {
-    const regs = v.registros || {};
-    const streak = calcVicioStreak(regs);
-    const isResistiu = regs[t] === 'resistiu';
-    const isCedi = regs[t] === 'cedi';
-    const dots = last30.map(d => {
-      const est = regs[d];
-      const isT = d === t;
-      const cls = est === 'resistiu' ? 'resistiu' : est === 'cedi' ? 'cedi' : 'empty';
-      return `<div class="v-dot ${cls}${isT?' today':''}" onclick="cycleVicioDay('${v.id}','${d}')" title="${d}"></div>`;
-    }).join('');
-    const btnClass = isResistiu ? 'btn-g' : 'btn-a';
-    const btnTxt   = isResistiu ? '✓ Resistiu hoje' : isCedi ? '✗ Cedeu hoje — corrigir?' : '+ Marcar hoje como Resistiu';
-    return `<div class="vicio-card">
-      <div class="vicio-hdr">
-        <span class="vicio-nome">${esc(v.nome)}</span>
-        <span class="streak${streak===0?' zero':''}">🔥 ${streak} dias</span>
-        <button class="xbtn" onclick="removeVicio('${v.id}')">×</button>
-      </div>
-      <div style="font-size:10px;color:var(--t3);margin-bottom:6px;font-family:Georgia,serif">Últimos 30 dias · 🟢 Resistiu · 🔴 Cedeu</div>
-      <div class="v-grid">${dots}</div>
-      <div style="display:flex;gap:7px;margin-top:8px">
-        <button class="btn ${btnClass} btn-sm" style="flex:1" onclick="markVicioResistiu('${v.id}')">
-          ${isResistiu ? '✓ Resistiu hoje' : '+ Resistiu hoje'}
-        </button>
-        <button class="btn btn-sm" style="border:1px solid var(--red);color:var(--red);background:none;${isCedi?'background:var(--rd);font-weight:bold':''}" onclick="markVicioCedi('${v.id}')">
-          ${isCedi ? '✗ Cedeu (marcado)' : '✗ Cedeu hoje'}
-        </button>
-      </div>
-    </div>`;
+  list.innerHTML = ativos.map(c => {
+    const isDesbloqueado = checkContratoDesbloqueado(c);
+    
+    // Obter nome do alvo
+    let alvoNome = 'Item Removido';
+    if (c.tipoAlvo === 'meta') {
+      const m = [...(S.frentes||[]), ...(S.ciclos||[]), ...(S.horizontes||[]), ...(S.historico||[])].find(x => x.id === c.alvoId);
+      if (m) alvoNome = m.nome || m.texto;
+    } else if (c.tipoAlvo === 'habito') {
+      const h = (S.habitos||[]).find(x => x.id === c.alvoId);
+      if (h) alvoNome = h.nome;
+    }
+
+    const cardClass = isDesbloqueado ? 'c-card desbloqueado' : 'c-card';
+    const btnClass = isDesbloqueado ? 'btn-resgatar active' : 'btn-resgatar';
+    const btnLabel = isDesbloqueado ? '🏆 Resgatar Recompensa' : '🔒 Cumprir para Destravar';
+
+    return `
+      <div class="${cardClass}">
+        <div class="c-recompensa">🎁 ${esc(c.recompensa)}</div>
+        <div class="c-alvo">Gatilho: ${esc(alvoNome)}</div>
+        <button class="${btnClass}" ${!isDesbloqueado ? 'disabled' : ''} onclick="resgatarContrato('${c.id}')">${btnLabel}</button>
+      </div>`;
   }).join('');
 }
 
-function markVicioResistiu(id) {
-  const v = S.vicios.find(x => x.id === id); if (!v) return;
-  if (!v.registros) v.registros = {};
-  const t = today();
-  if (v.registros[t] === 'resistiu') delete v.registros[t];
-  else v.registros[t] = 'resistiu';
-  persist(); renderVicios();
+function checkContratoDesbloqueado(c) {
+  // O contrato é válido apenas se a ação ocorreu APÓS a data de renovação (relógio zerado)
+  if (c.tipoAlvo === 'meta') {
+    // Procura no histórico uma meta concluída com o ID do alvo, cujo encerramento seja MAIOR que o renovadoEmMs
+    const metaConcluida = (S.historico || []).find(h => h.id === c.alvoId && h.statusFinal === 'concluido' && (h.encerradoEmMs || 0) >= c.renovadoEmMs);
+    return !!metaConcluida;
+  }
+  
+  if (c.tipoAlvo === 'habito') {
+    // Hábito: Atingiu a frequência da semana atual?
+    // Em um cenário de relógio absoluto, verificaríamos se os checks ocorreram após renovadoEmMs.
+    // Para simplificar na UX atual: se a porcentagem da semana atual bater 100%, libera.
+    const h = (S.habitos||[]).find(x => x.id === c.alvoId);
+    if (!h) return false;
+    const weekFeitos = calcularConcluidosSemana(h.registros);
+    const metaFreq = h.freqAlvo || 7;
+    return weekFeitos >= metaFreq;
+  }
+  return false;
 }
 
-function markVicioCedi(id) {
-  const v = S.vicios.find(x => x.id === id); if (!v) return;
-  if (!v.registros) v.registros = {};
-  const t = today();
-  if (v.registros[t] === 'cedi') delete v.registros[t];
-  else v.registros[t] = 'cedi';
-  persist(); renderVicios();
-}
-
-function cycleVicioDay(id, date) {
-  const v = S.vicios.find(x => x.id === id); if (!v) return;
-  if (!v.registros) v.registros = {};
-  const cur  = v.registros[date] || null;
-  const idx  = VICIO_CYCLE.indexOf(cur);
-  const next = VICIO_CYCLE[(idx === -1 ? 0 : idx + 1) % VICIO_CYCLE.length];
-  if (next === null) delete v.registros[date];
-  else v.registros[date] = next;
-  persist(); renderVicios();
-}
-
-function removeVicio(id) {
-  showConfirm('Remover este rastreador e todo seu histórico?', () => {
-    S.vicios = S.vicios.filter(x => x.id !== id);
-    persist(); renderVicios();
+function resgatarContrato(id) {
+  const c = S.contratos.find(x => x.id === id);
+  if (!c) return;
+  
+  // O usuário resgatou. O contrato vai para o histórico e criamos um igual renovado (relógio zerado)
+  c.resgatado = true;
+  c.resgatadoEm = today();
+  
+  // Cria renovação automática zerando o relógio
+  S.contratos.push({
+    id: uid(), recompensa: c.recompensa, tipoAlvo: c.tipoAlvo, alvoId: c.alvoId,
+    renovadoEmMs: Date.now(), // RELÓGIO ZERADO AQUI
+    resgatado: false
   });
-}
 
-function saveVicio() {
-  const nome = document.getElementById('inp-vicio-nome').value.trim();
-  if (!nome) return document.getElementById('inp-vicio-nome').focus();
-  S.vicios.push({ id: uid(), nome, registros: {} });
-  persist(); closeM('mbg-add-vicio'); renderPorao();
-}
-
-function renderDescarte() {
-  document.getElementById('disc-cnt').textContent = S.descarte.length;
-  const list = document.getElementById('list-descarte');
-  list.innerHTML = S.descarte.length === 0
-    ? '<div class="empty">Nenhum item descartado ainda.</div>'
-    : S.descarte.slice().reverse().map(d => `
-      <div class="disc-item">
-        <span style="flex:1">${esc(d.texto)}</span>
-        <span class="disc-date">${fmtDate(d.data)}</span>
-        <button class="restore-btn" onclick="restoreDescarte('${d.id}')">↩ restaurar</button>
-      </div>`).join('');
-}
-
-function restoreDescarte(id) {
-  const item = S.descarte.find(x => x.id === id); if (!item) return;
-  S.inbox.push({ id: uid(), texto: item.texto, data: today(), status: 'pendente' });
-  S.descarte = S.descarte.filter(x => x.id !== id);
-  persist(); renderPorao();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   HISTÓRICO
-═══════════════════════════════════════════════════════════ */
-function renderHistory() {
-  const list = document.getElementById('hist-list');
-  if (S.historico.length === 0) {
-    list.innerHTML = '<div class="empty">Nenhuma meta encerrada ainda.</div>';
-    return;
-  }
-  list.innerHTML = S.historico.slice().reverse().map(h =>
-    `<div class="hist-item">
-      <div class="hist-nome">${esc(h.nome)}<div style="font-size:10px;color:var(--t3)">${h.tipo} · ${fmtDate(h.encerradoEm)}</div></div>
-      ${h.rodada > 1 ? `<span class="hist-rodada">${h.rodada}ª rodada</span>` : ''}
-      <span class="hist-badge ${h.statusFinal}">${h.statusFinal}</span>
-      <button style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0" onclick="deleteFromHistory('${h.id}',event)" title="Remover">×</button>
-    </div>`
-  ).join('');
-}
-
-function deleteFromHistory(id, event) {
-  if (event) event.stopPropagation();
-  S.historico = S.historico.filter(x => x.id !== id);
   persist();
-  scheduleSync();
-  renderHistory();
-}
-
-document.getElementById('mbg-history').addEventListener('click', e => {
-  if (e.target.closest('.modal')) return;
-});
-// render history on open
-document.querySelector('[onclick="openM(\'mbg-history\')"]').addEventListener('click', renderHistory);
-
-/* ═══════════════════════════════════════════════════════════
-   CONFIGURAÇÕES
-═══════════════════════════════════════════════════════════ */
-function openSettingsModal() {
-  document.getElementById('inp-script-url').value = S.settings.scriptUrl || '';
-  setSyncStatus(navigator.onLine ? (S.meta.ultimaSync ? 'ok' : 'syncing') : 'err', '');
-  openM('mbg-settings');
-}
-
-function saveSettings() {
-  const url = document.getElementById('inp-script-url').value.trim();
-  S.settings.scriptUrl = url;
-  persist();
-  closeM('mbg-settings');
-  if (url) triggerSync();
-}
-
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'canteiro-' + today() + '.json';
-  a.click();
-}
-
-function importJSON(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    try {
-      const d = JSON.parse(ev.target.result);
-      if (d.habitos && d.inbox && d.tarefas) {
-        const localSettings = S.settings;
-        S = { ...d, settings: localSettings };
-        localStorage.setItem(KEY, JSON.stringify(S));
-        location.reload();
-      } else alert('Arquivo inválido.');
-    } catch { alert('Erro ao importar.'); }
-  };
-  r.readAsText(file);
-  e.target.value = '';
+  renderContratos();
+  showToast('🏆 Recompensa Resgatada! Contrato Renovado.');
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER ALL
+   9. MODAIS RÁPIDOS E INIT
 ═══════════════════════════════════════════════════════════ */
-function renderAll() {
-  renderHabitos();
-  renderCaderno();
-  renderPredio();
-  renderPorao();
+function openM(id) { 
+  document.getElementById(id).classList.add('open'); 
+}
+function closeM(id) { 
+  document.getElementById(id).classList.remove('open'); 
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DASHBOARD
-═══════════════════════════════════════════════════════════ */
-let dashPeriod = 'month';
+// Vinculação para Nova Rotina (Hábitos/Vícios)
+function openAddRotina(tipo) {
+  // Limpeza forçada da tela (Regra de UX)
+  document.getElementById('inp-rotina-nome').value = '';
+  document.getElementById('inp-rotina-freq').value = '7';
+  document.getElementById('inp-rotina-vinc-id').value = '';
+  document.getElementById('rotina-vinc-selected').style.display = 'none';
 
-function setDashPeriod(p, el) {
-  dashPeriod = p;
-  document.querySelectorAll('.df-p').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('dash-custom-range').style.display = p === 'custom' ? 'flex' : 'none';
-  renderDash();
-}
+  document.getElementById('inp-rotina-tipo').value = tipo;
+  
+  const wFreq = document.getElementById('wrap-rotina-freq');
+  const wVinc = document.getElementById('wrap-rotina-vinculos');
+  
+  const isHabito = tipo === 'habito';
+  wFreq.style.display = isHabito ? 'block' : 'none';
+  wVinc.style.display = 'block';
 
-function getDashDates() {
-  const t = today();
-  const now = new Date();
-  if (dashPeriod === 'week') {
-    const days = getWeekDays();
-    return { from: days[0], to: days[6], label: 'Esta semana' };
-  }
-  if (dashPeriod === 'month') {
-    const f = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-    return { from: f, to: t, label: monthName(now.getMonth()) + ' ' + now.getFullYear() };
-  }
-  if (dashPeriod === 'quarter') {
-    const d = new Date(now); d.setMonth(d.getMonth() - 2); d.setDate(1);
-    return { from: d.toISOString().slice(0,10), to: t, label: 'Últimos 3 meses' };
-  }
-  if (dashPeriod === 'year') {
-    return { from: `${now.getFullYear()}-01-01`, to: t, label: 'Ano ' + now.getFullYear() };
-  }
-  if (dashPeriod === 'custom') {
-    const f = document.getElementById('dash-date-from').value;
-    const to = document.getElementById('dash-date-to').value;
-    if (f && to) return { from: f, to: to, label: fmtDate(f) + ' → ' + fmtDate(to) };
-    return { from: t, to: t, label: 'Selecione as datas' };
-  }
-  return { from: t, to: t, label: '' };
-}
+  document.getElementById('add-rotina-title').textContent = isHabito ? 'Novo Hábito' : (tipo === 'vicio' ? 'Novo Vício' : 'Novo Desafio');
 
-function getDayRange(from, to) {
-  const days = [], d = new Date(from + 'T00:00:00');
-  const end = new Date(to + 'T00:00:00');
-  while (d <= end) { days.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
-  return days;
-}
-
-function monthName(m) {
-  return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m];
-}
-
-function renderDash() {
-  const { from, to, label } = getDashDates();
-  const days = getDayRange(from, to);
-  document.getElementById('dash-period-label').textContent = label + ' · ' + days.length + ' dias';
-
-  const habAtivos = S.habitos || [];
-  const habArq    = S.habitosArquivados || [];
-  const habTodos  = [...habAtivos, ...habArq].filter(h => days.some(d => (h.registros||{})[d]));
-  const vicios    = S.vicios || [];
-  const hist      = S.historico || [];
-
-  let html = '';
-
-  // ── KPIs HÁBITOS ──────────────────────────────────────────────
-  if (habTodos.length > 0) {
-    let totF=0, totP=0, totSlots=0;
-    habTodos.forEach(h => {
-      const regs = h.registros||{};
-      totF += days.filter(d => regs[d]==='feito').length;
-      totP += days.filter(d => regs[d]==='parcial').length;
-      totSlots += days.length;
-    });
-    const pctG = totSlots ? Math.round(totF/totSlots*100) : 0;
-    const kClass = pctG>=80?'green':pctG>=50?'gold':'red';
-    const diasLivres = days.length - Math.round(totF/Math.max(habTodos.length,1));
-
-    // Melhor e pior hábito
-    let best={nome:'—',sc:-1}, worst={nome:'—',sc:2};
-    habTodos.forEach(h=>{
-      const f=days.filter(d=>(h.registros||{})[d]==='feito').length;
-      const sc=days.length?f/days.length:0;
-      if(sc>best.sc){best={nome:h.nome,sc};}
-      if(sc<worst.sc){worst={nome:h.nome,sc};}
-    });
-
-    html += `<div class="dash-kpis">
-      <div class="kpi-card ${kClass}">
-        <div class="kpi-val">${pctG}%</div>
-        <div class="kpi-lbl">Cumprimento geral</div>
-        <div class="kpi-sub">${totF} dias concluídos</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-val">${habTodos.length}</div>
-        <div class="kpi-lbl">Hábitos ativos</div>
-        <div class="kpi-sub">${totP} dias parciais</div>
-      </div>
-      <div class="kpi-card gold">
-        <div class="kpi-val" style="font-size:14px;padding-top:3px">🏆 ${esc(best.nome.slice(0,16))}</div>
-        <div class="kpi-lbl">Melhor hábito</div>
-        <div class="kpi-sub">${Math.round(best.sc*100)}% de cumprimento</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-val" style="font-size:14px;padding-top:3px">⚠ ${esc(worst.nome.slice(0,14))}</div>
-        <div class="kpi-lbl">Mais atenção</div>
-        <div class="kpi-sub">${Math.round(worst.sc*100)}% de cumprimento</div>
-      </div>
-    </div>`;
-
-    // ── BARRAS DE PROGRESSO POR HÁBITO ──────────────────────────
-    html += `<div class="dash-sec">
-      <div class="dash-sec-hdr">Hábitos <span>${days.length} dias</span></div>`;
-
-    habTodos.forEach(h => {
-      const regs = h.registros||{};
-      const f = days.filter(d=>regs[d]==='feito').length;
-      const p = days.filter(d=>regs[d]==='parcial').length;
-      const fa = days.filter(d=>regs[d]==='faltou').length;
-      const pctF = days.length ? f/days.length : 0;
-      const pctP = days.length ? p/days.length : 0;
-      const pctFa = days.length ? fa/days.length : 0;
-      const cls = pctF>=0.8?'green':pctF>=0.5?'amber':'red';
-      html += `<div class="prog-row">
-        <div class="prog-name">
-          <span>${esc(h.nome)}</span>
-          <span class="prog-name-pct">${f}/${days.length} dias (${Math.round(pctF*100)}%)</span>
+  // Popular Sanfona de Vínculos (Metas Ativas)
+  const metas = [...(S.frentes||[]), ...(S.ciclos||[]), ...(S.horizontes||[])].filter(x => !x.status || x.status === 'ativo');
+  const acc = document.getElementById('rotina-vinculos-accordion');
+  if (metas.length > 0) {
+    acc.innerHTML = `
+      <details class="v-accordion">
+        <summary>Escolher Meta Associada</summary>
+        <div class="v-list">
+          ${metas.map(m => `<div class="v-item" onclick="selectRotinaVinc('${m.id}', '${esc(m.nome||m.texto)}')">${esc(m.nome||m.texto)}</div>`).join('')}
         </div>
-        <div class="prog-track">
-          <div class="prog-fill ${cls}" style="width:${Math.round(pctF*100)}%"></div>
-          <div class="prog-fill amber" style="width:${Math.round(pctP*100)}%"></div>
-          <div class="prog-fill red" style="width:${Math.round(pctFa*100)}%"></div>
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
-
-    // ── PADRÃO POR DIA DA SEMANA ──────────────────────────────────
-    const DN = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    const dayBkts = Array.from({length:7},()=>[]);
-    days.forEach(d => {
-      const dow = new Date(d+'T12:00:00').getDay();
-      dayBkts[dow===0?6:dow-1].push(d);
-    });
-
-    html += `<div class="dash-sec">
-      <div class="dash-sec-hdr">Padrão por dia da semana</div>
-      <div class="bar-chart">`;
-
-    dayBkts.forEach((bk, di) => {
-      let f=0,p=0,fa=0;
-      habTodos.forEach(h=>{
-        const regs=h.registros||{};
-        f+=bk.filter(d=>regs[d]==='feito').length;
-        p+=bk.filter(d=>regs[d]==='parcial').length;
-        fa+=bk.filter(d=>regs[d]==='faltou').length;
-      });
-      const tot=bk.length*habTodos.length||1;
-      const pF=Math.round(f/tot*100), pP=Math.round(p/tot*100), pFa=Math.round(fa/tot*100);
-      html += `<div class="bar-row">
-        <span class="bar-day">${DN[di]}</span>
-        <div class="bar-track">
-          <div class="bar-seg g" style="width:${pF}%"></div>
-          <div class="bar-seg a" style="width:${pP}%"></div>
-          <div class="bar-seg r" style="width:${pFa}%"></div>
-        </div>
-        <span class="bar-pct">${pF}%</span>
-      </div>`;
-    });
-    html += `</div></div>`;
-
-    // ── HEATMAP (só se período <= 90 dias) ───────────────────────
-    if (days.length <= 92 && habTodos.length === 1) {
-      const h = habTodos[0];
-      const regs = h.registros||{};
-      // Mostra calendário do período
-      const firstDay = new Date(from+'T12:00:00').getDay();
-      const offset = firstDay===0?6:firstDay-1;
-      html += `<div class="dash-sec">
-        <div class="dash-sec-hdr">Calendário — ${esc(h.nome)}</div>
-        <div class="cal-grid">
-          ${['S','T','Q','Q','S','S','D'].map(d=>`<div class="cal-day-hdr">${d}</div>`).join('')}
-          ${Array(offset).fill('<div class="cal-day empty"></div>').join('')}
-          ${days.map(d=>{
-            const est=regs[d]||'';
-            const n=parseInt(d.slice(8));
-            const isT=d===today();
-            return `<div class="cal-day ${est||''}${isT?' today':''}" title="${d}">${n}</div>`;
-          }).join('')}
-        </div>
-      </div>`;
-    } else if (habTodos.length > 1) {
-      // Tabela comparativa
-      html += `<div class="dash-sec">
-        <div class="dash-sec-hdr">Comparação detalhada</div>
-        <table class="dash-table">
-          <tr>
-            <th>Hábito</th><th>Feito</th><th>Parc.</th><th>Faltou</th><th>Score</th>
-          </tr>`;
-      habTodos.forEach(h=>{
-        const regs=h.registros||{},n=days.length||1;
-        const f=days.filter(d=>regs[d]==='feito').length;
-        const p=days.filter(d=>regs[d]==='parcial').length;
-        const fa=days.filter(d=>regs[d]==='faltou').length;
-        const sc=Math.round((f+p*0.5)/n*100);
-        const cls=sc>=80?'good':sc>=50?'mid':'bad';
-        html+=`<tr>
-          <td>${esc(h.nome.slice(0,22))}</td>
-          <td>${f}</td><td>${p}</td><td>${fa}</td>
-          <td class="${cls}">${sc}%</td>
-        </tr>`;
-      });
-      html += `</table></div>`;
-    }
+      </details>`;
   } else {
-    html += `<div class="dash-sec">
-      <div style="text-align:center;padding:24px;color:var(--t3);font-family:Georgia,serif;line-height:1.7">
-        Nenhum hábito com dados no período selecionado.<br>
-        <span style="font-size:11px">Tente outro período ou adicione hábitos na aba Hábitos.</span>
-      </div>
-    </div>`;
+    acc.innerHTML = `<div style="font-size:11px; color:var(--t3);">Nenhuma meta disponível.</div>`;
   }
 
-  // ── KPIs PORÃO ────────────────────────────────────────────────
-  if (vicios.length > 0) {
-    let totR=0, totC=0, bSt=0;
-    vicios.forEach(v=>{
-      const regs=v.registros||{};
-      totR+=days.filter(d=>regs[d]==='resistiu').length;
-      totC+=days.filter(d=>regs[d]==='cedi').length;
-      bSt=Math.max(bSt, calcVicioStreak(regs));
-    });
-    const pctR=days.length*vicios.length?Math.round(totR/(days.length*vicios.length)*100):0;
-    const kR=pctR>=80?'green':pctR>=50?'gold':'red';
+  openM('mbg-add-rotina');
+}
 
-    html += `<div class="dash-sec">
-      <div class="dash-sec-hdr">Porão — Vícios</div>
-      <div class="dash-kpis" style="margin-bottom:12px">
-        <div class="kpi-card ${kR}">
-          <div class="kpi-val">${pctR}%</div>
-          <div class="kpi-lbl">Dias resistiu</div>
-          <div class="kpi-sub">${totR} de ${days.length*vicios.length}</div>
-        </div>
-        <div class="kpi-card ${totC>0?'red':'green'}">
-          <div class="kpi-val">${totC}</div>
-          <div class="kpi-lbl">Dias cedeu</div>
-          <div class="kpi-sub">no período</div>
-        </div>
-        <div class="kpi-card gold">
-          <div class="kpi-val">🔥${bSt}d</div>
-          <div class="kpi-lbl">Melhor streak</div>
-          <div class="kpi-sub">consecutivos</div>
-        </div>
-        <div class="kpi-card blue">
-          <div class="kpi-val">${vicios.length}</div>
-          <div class="kpi-lbl">Vícios rastreados</div>
-          <div class="kpi-sub">ativos</div>
-        </div>
-      </div>`;
+function selectRotinaVinc(id, nome) {
+  document.getElementById('inp-rotina-vinc-id').value = id;
+  const chip = document.getElementById('rotina-vinc-selected');
+  chip.innerHTML = `Vinculado: ${nome} <span style="cursor:pointer; color:var(--t2); margin-left:8px;" onclick="clearRotinaVinc()">×</span>`;
+  chip.style.display = 'inline-flex';
+}
 
-    // Streaks individuais
-    html += `<div style="margin-bottom:4px">`;
-    vicios.forEach(v=>{
-      const regs=v.registros||{};
-      const res=days.filter(d=>regs[d]==='resistiu').length;
-      const ce=days.filter(d=>regs[d]==='cedi').length;
-      const str=calcVicioStreak(regs);
-      const pR=days.length?Math.round(res/days.length*100):0;
-      const cls=pR>=80?'green':pR>=50?'amber':'red';
-      html+=`<div class="prog-row">
-        <div class="prog-name">
-          <span>${esc(v.nome)}</span>
-          <span class="prog-name-pct">🔥${str}d streak · ${pR}%</span>
-        </div>
-        <div class="prog-track">
-          <div class="prog-fill ${cls}" style="width:${pR}%"></div>
-          ${ce>0?`<div class="prog-fill red" style="width:${Math.round(ce/days.length*100)}%"></div>`:''}
-        </div>
-      </div>`;
-    });
-    html += `</div></div>`;
+function clearRotinaVinc() {
+  document.getElementById('inp-rotina-vinc-id').value = '';
+  document.getElementById('rotina-vinc-selected').style.display = 'none';
+}
+
+function saveRotina() {
+  const tipo = document.getElementById('inp-rotina-tipo').value;
+  const nome = document.getElementById('inp-rotina-nome').value.trim();
+  if (!nome) return;
+
+  const vincId = document.getElementById('inp-rotina-vinc-id').value;
+  const obj = { id: uid(), nome: nome, registros: {}, criadoEm: today() };
+  if (vincId) obj.vinculoId = vincId;
+
+  if (tipo === 'habito') {
+    obj.freqAlvo = parseInt(document.getElementById('inp-rotina-freq').value) || 7;
+    obj.diasAtivos = [0,1,2,3,4,5,6]; // Padrão simplificado, todo dia é elegível, a meta é bater a freq
+    S.habitos.push(obj);
+  } else if (tipo === 'vicio') {
+    obj.diasAtivos = [0,1,2,3,4,5,6];
+    S.vicios.push(obj);
+  } else if (tipo === 'desafio') {
+    obj.modo = 'construir'; // Desafio padrão
+    obj.duracaoDias = 21;
+    obj.inicioEm = today();
+    obj.ativo = true;
+    S.desafios.push(obj);
   }
 
-  // ── METAS ─────────────────────────────────────────────────────
-  const metasAtivas = [
-    ...(S.frentes||[]), ...(S.ciclos||[]),
-    ...(S.horizontes||[]), ...(S.pilares||[])
-  ].filter(x => !x.status || x.status==='ativo');
+  persist();
+  closeM('mbg-add-rotina');
+  renderRotina();
+}
 
-  if (metasAtivas.length > 0 || hist.length > 0) {
-    html += `<div class="dash-sec">
-      <div class="dash-sec-hdr">Metas ativas <span>${metasAtivas.length}</span></div>`;
-
-    ['frentes','ciclos','horizontes','pilares'].forEach(tipo => {
-      const items = (S[tipo]||[]).filter(x=>!x.status||x.status==='ativo');
-      if (!items.length) return;
-      const nomes = {frentes:'Frentes',ciclos:'Ciclos',horizontes:'Horizontes',pilares:'Pilares'};
-      html += `<div style="margin-bottom:10px">
-        <div style="font-size:9px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:Georgia,serif">${nomes[tipo]}</div>`;
-      items.forEach(it=>{
-        const nome=it.nome||it.texto||'';
-        const rod=it.rodada>1?`<span style="font-size:9px;color:var(--acc);background:var(--acc-d);border-radius:3px;padding:1px 5px;margin-left:5px">${it.rodada}ª</span>`:'';
-        html+=`<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--b1)">
-          <span style="font-size:13px;flex:1">${esc(nome)}${rod}</span>
-        </div>`;
-      });
-      html += `</div>`;
-    });
-    html += `</div>`;
+// Botões fixos chamando openAddRotina (que não coloquei no HTML da parte 2, injetando viabilidade)
+document.addEventListener('DOMContentLoaded', () => {
+  // Ajuste nos headers da Rotina (Parte 2 HTML) para disparar as adições
+  const listDesafios = document.getElementById('list-desafios');
+  if (listDesafios && listDesafios.previousElementSibling) {
+    listDesafios.previousElementSibling.innerHTML += `<button class="btn btn-g btn-sm" onclick="openAddRotina('desafio')">+</button>`;
+    listDesafios.previousElementSibling.style.display = 'flex';
+    listDesafios.previousElementSibling.style.justifyContent = 'space-between';
   }
-
-  // ── ZONA DE EXCLUSÃO ─────────────────────────────────────────
-  html += buildDeleteZone();
-
-  document.getElementById('dash-content').innerHTML = html;
-}
-
-function buildDeleteZone() {
-  const habAtivos = S.habitos || [];
-  const habArq    = S.habitosArquivados || [];
-  const vicios    = S.vicios || [];
-  const hist      = S.historico || [];
-  const tarefas   = (S.tarefas||[]).filter(t=>t.coluna==='feito');
-  const descarte  = S.descarte || [];
-  const total     = habAtivos.length + habArq.length + vicios.length + hist.length + tarefas.length + descarte.length;
-
-  let items = '';
-
-  habAtivos.forEach(h => {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${esc(h.nome)}</span>
-      <span class="dash-delete-meta">hábito ativo</span>
-      <button class="dash-delete-btn" onclick="deleteHabitoHard('${h.id}')">Excluir</button>
-    </div>`;
-  });
-  habArq.forEach(h => {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${esc(h.nome)}</span>
-      <span class="dash-delete-meta">hábito arquivado</span>
-      <button class="dash-delete-btn" onclick="deleteHabitoArqHard('${h.id}')">Excluir</button>
-    </div>`;
-  });
-  vicios.forEach(v => {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${esc(v.nome)}</span>
-      <span class="dash-delete-meta">vício</span>
-      <button class="dash-delete-btn" onclick="deleteVicioHard('${v.id}')">Excluir</button>
-    </div>`;
-  });
-  hist.forEach(h => {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${esc(h.nome.slice(0,30))}</span>
-      <span class="dash-delete-meta">${h.tipo} · ${h.statusFinal}</span>
-      <button class="dash-delete-btn" onclick="deleteHistHard('${h.id}')">Excluir</button>
-    </div>`;
-  });
-  tarefas.forEach(t => {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${esc(t.texto.slice(0,30))}</span>
-      <span class="dash-delete-meta">tarefa concluída</span>
-      <button class="dash-delete-btn" onclick="deleteTaskHard('${t.id}')">Excluir</button>
-    </div>`;
-  });
-  if (descarte.length) {
-    items += `<div class="dash-delete-item">
-      <span class="dash-delete-name">${descarte.length} itens no descarte</span>
-      <span class="dash-delete-meta">descarte</span>
-      <button class="dash-delete-btn" onclick="clearDescarte()">Limpar tudo</button>
-    </div>`;
+  const listHabitos = document.getElementById('list-habitos');
+  if (listHabitos && listHabitos.previousElementSibling) {
+    listHabitos.previousElementSibling.innerHTML += `<button class="btn btn-g btn-sm" onclick="openAddRotina('habito')">+</button>`;
+    listHabitos.previousElementSibling.style.display = 'flex';
+    listHabitos.previousElementSibling.style.justifyContent = 'space-between';
   }
-  items += `<div style="padding-top:10px;border-top:1px solid rgba(200,75,75,.2);margin-top:4px">
-    <button class="btn btn-red btn-sm" style="width:100%" onclick="zerarTudoConfirm()">⚠ Zerar TODOS os dados do app</button>
-  </div>`;
+  const listVicios = document.getElementById('list-vicios');
+  if (listVicios && listVicios.previousElementSibling) {
+    listVicios.previousElementSibling.innerHTML += `<button class="btn btn-g btn-sm" onclick="openAddRotina('vicio')">+</button>`;
+    listVicios.previousElementSibling.style.display = 'flex';
+    listVicios.previousElementSibling.style.justifyContent = 'space-between';
+  }
+});
 
-  return `<div class="dash-delete-zone">
-    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleDeleteZone(this)">
-      <div class="dash-delete-title" style="margin-bottom:0">🗑 Zona de Manutenção <span style="font-weight:normal;opacity:.6">(${total} itens)</span></div>
-      <span id="dz-caret" style="color:var(--red);font-size:12px;transition:.2s">▸</span>
-    </div>
-    <div id="dz-body" style="display:none;margin-top:12px">${items}</div>
-  </div>`;
-}
-
-function toggleDeleteZone(el) {
-  const body   = document.getElementById('dz-body');
-  const caret  = document.getElementById('dz-caret');
-  const open   = body.style.display === 'none';
-  body.style.display  = open ? 'block' : 'none';
-  caret.textContent   = open ? '▾' : '▸';
-}
-
-// ── Hard deletes (sem histórico) ─────────────────────────────────
-function deleteHabitoHard(id) {
-  showConfirm('Excluir este hábito e todos os dados permanentemente?', () => {
-    S.habitos = (S.habitos||[]).filter(x => x.id !== id);
-    persist(); renderDash();
-  });
-}
-function deleteHabitoArqHard(id) {
-  showConfirm('Excluir hábito arquivado permanentemente?', () => {
-    S.habitosArquivados = (S.habitosArquivados||[]).filter(x => x.id !== id);
-    persist(); renderDash();
-  });
-}
-function deleteVicioHard(id) {
-  showConfirm('Excluir este vício e todos os dados permanentemente?', () => {
-    S.vicios = (S.vicios||[]).filter(x => x.id !== id);
-    persist(); renderPorao(); renderDash();
-  });
-}
-function deleteHistHard(id) {
-  S.historico = (S.historico||[]).filter(x => x.id !== id);
-  persist(); renderDash();
-}
-function deleteTaskHard(id) {
-  S.tarefas = (S.tarefas||[]).filter(x => x.id !== id);
-  persist(); renderDash();
-}
-function clearDescarte() {
-  showConfirm('Limpar todos os itens do descarte?', () => {
-    S.descarte = [];
-    persist(); renderDash();
-  });
-}
-function zerarTudoConfirm() {
-  showConfirm('Zerar TODOS os dados? Esta ação não pode ser desfeita.', () => {
-    showConfirm('Tem certeza absoluta? Tudo será apagado.', () => {
-      const settings = S.settings;
-      S = blank();
-      S.settings = settings;
-      persist();
-      location.reload();
-    });
-  });
-}
 
 /* ═══════════════════════════════════════════════════════════
-   INIT
+   INIT GERAL DO APLICATIVO
 ═══════════════════════════════════════════════════════════ */
 function init() {
-  // Fix button onclick for settings icon
-  document.querySelector('[onclick="openM(\'mbg-settings\')"]').onclick = openSettingsModal;
-
-  // Fix add habito button
-  document.querySelector('[onclick="openM(\'mbg-add-habito\')"]').onclick = openM_addHabito;
-
-  // Missão blur save
-  document.getElementById('inp-missao').addEventListener('blur', persist);
-
-  // PWA service worker
+  renderRotina();
+  
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/Canteiro-app/sw.js', { scope: '/Canteiro-app/' }).catch(() => {});
+    navigator.serviceWorker.register('/Canteiro-Pessoal-APP/sw.js', { scope: '/Canteiro-Pessoal-APP/' }).catch(() => {});
   }
+  
+  window.addEventListener('beforeunload', () => { if (S.settings.scriptUrl && navigator.onLine) doSync(); });
+  
+  window.addEventListener('online', () => {
+    document.getElementById('offline-banner').style.display = 'none';
+    doSync();
+  });
+  
+  window.addEventListener('offline', () => {
+    document.getElementById('offline-banner').style.display = 'block';
+  });
 
-  // Online/offline indicator
-  window.addEventListener('online',  () => { setSyncStatus('syncing', ''); triggerSync(); });
-  window.addEventListener('offline', () => setSyncStatus('err', 'Offline'));
-
-  // Initial render
-  renderHabitos();
-
-  // Initial sync check
-  if (S.settings.scriptUrl && navigator.onLine) {
-    setTimeout(doSync, 1500);
-  } else {
-    setSyncStatus(navigator.onLine ? 'ok' : 'err', S.meta.ultimaSync ? fmt(S.meta.ultimaSync) : '');
-  }
+  if (!navigator.onLine) document.getElementById('offline-banner').style.display = 'block';
 }
 
 init();

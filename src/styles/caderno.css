@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════
+   CADERNO — Inbox
+═══════════════════════════════════════════════════════════ */
+.inbox-bar{display:flex;gap:8px;margin-bottom:14px;position:sticky;top:-16px;background:var(--bg);padding:14px 0 10px;z-index:10;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;border-bottom:1px solid var(--b1)}
+.inbox-bar input{flex:1}
+.inbox-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;animation:fadeIn .18s ease}
+.inbox-txt{flex:1;font-size:14px;line-height:1.4;word-break:break-word}
+.inbox-meta{font-size:10px;color:var(--t3);margin-top:2px}
+.triage-btn{background:var(--acc-d);border:1px solid var(--acc-g);color:var(--acc);border-radius:var(--rs);padding:4px 9px;font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;font-family:Georgia,serif;transition:var(--tr);flex-shrink:0}
+.triage-btn:hover{background:var(--acc);color:#0E0E0E}
+.xbtn{background:none;border:none;color:var(--t3);font-size:16px;cursor:pointer;padding:0 3px;line-height:1;flex-shrink:0}
+.xbtn:hover{color:var(--red)}
+
+/* ═══════════════════════════════════════════════════════════
+   KANBAN — base styles (layout/sizing handled by swipe rules)
+═══════════════════════════════════════════════════════════ */
+.k-col-hdr{font-size:9px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-family:Georgia,serif}
+.k-afazer .k-col-hdr{color:var(--t2)}
+.k-fazendo .k-col-hdr{color:var(--acc)}
+.k-feito .k-col-hdr{color:var(--green)}
+.k-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:8px;margin-bottom:6px;font-size:12px;color:var(--text);line-height:1.4;cursor:grab;animation:fadeIn .18s ease;user-select:none;transition:box-shadow .15s}
+.k-card:active{cursor:grabbing}
+.k-card.dragging{opacity:.35;border-style:dashed;box-shadow:none}
+.k-col.drag-over{background:var(--s3);border-color:var(--acc)}
+.k-drop-indicator{height:3px;background:var(--acc);border-radius:2px;margin:2px 0;pointer-events:none;animation:fadeIn .1s}
+.k-card-top{display:flex;align-items:flex-start;gap:5px}
+.k-card-txt{flex:1;word-break:break-word}
+.k-tag{display:inline-block;font-size:8px;font-weight:bold;letter-spacing:.8px;padding:2px 5px;border-radius:3px;margin-top:4px;text-transform:uppercase;font-family:Georgia,serif}
+.k-tag.p11{background:var(--gd);color:var(--green)}
+.k-tag.p10{background:var(--bd);color:var(--blue)}
+.k-tag.p01{background:var(--yd);color:var(--yellow)}
+.k-tag.p00{background:var(--rd);color:var(--red)}
+.k-tag.k-tag-agendar{background:var(--bd);color:var(--blue)}
+.k-tag.k-tag-pedir-ajuda{background:var(--gd);color:var(--green)}
+.k-card-del{background:none;border:none;color:var(--t3);font-size:13px;cursor:pointer;opacity:0;transition:opacity var(--tr);padding:0;flex-shrink:0}
+.k-card:hover .k-card-del{opacity:1}
+.k-card-del:hover{color:var(--red)}
+.k-move{display:flex;gap:3px;margin-top:5px}
+.k-mv-btn{background:none;border:1px solid var(--b1);color:var(--t3);border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;font-family:Georgia,serif;transition:var(--tr)}
+.k-mv-btn:hover{border-color:var(--acc);color:var(--acc)}
+

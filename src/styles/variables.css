@@ -1,0 +1,18 @@
+/* ── Variables ─────────────────────────────────────────────── */
+:root{
+  --bg:#0E0E0E; --s1:#161616; --s2:#1E1E1E; --s3:#262626;
+  --b1:#2A2A2A; --b2:#383838;
+  --acc:#D4A017; --acc-d:rgba(212,160,23,.10); --acc-g:rgba(212,160,23,.20);
+  --text:#EDE8DF; --t2:#9A9A9A; --t3:#666;
+  --ui-font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --green:#3D9E6A; --gd:rgba(61,158,106,.14);
+  --yellow:#C9921A; --yd:rgba(201,146,26,.14);
+  --red:#C84B4B; --rd:rgba(200,75,75,.12);
+  --blue:#4A7FC1; --bd:rgba(74,127,193,.12);
+  --r:10px; --rs:6px; --tr:.15s ease;
+  --nav:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{display:flex;flex-direction:column;overflow:hidden}
+
